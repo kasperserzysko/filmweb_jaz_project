@@ -2,7 +2,6 @@ package com.kasperserzysko.web.services.interfaces;
 
 import com.kasperserzysko.web.dtos.PersonDetailedDto;
 import com.kasperserzysko.web.dtos.PersonDto;
-import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 

@@ -26,9 +26,19 @@ public class RoleCharacter {
     @ManyToMany(mappedBy = "rolesDisliked")
     private Set<User> roleDislikes = new HashSet<>();
 
-    @ManyToOne
+    @ManyToOne()
     private Person actor;
 
-    @ManyToOne
+    @ManyToOne()
     private Movie movie;
+
+
+    public void addActor(Person person){
+        actor.getMoviesStarred().add(this);
+        actor = person;
+    }
+    public void removeActor(){
+        actor.getMoviesStarred().remove(this);
+        actor = null;
+    }
 }

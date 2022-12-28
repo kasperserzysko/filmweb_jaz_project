@@ -1,0 +1,13 @@
+insert into genre (name) values ('Documentary');
+insert into genre (name) values ('Drama');
+insert into genre (name) values ('Animation');
+insert into genre (name) values ('Comedy');
+insert into genre (name) values ('Musical');
+insert into genre (name) values ('Horror');
+insert into genre (name) values ('Adventure');
+insert into genre (name) values ('Romance');
+insert into genre (name) values ('Action');
+insert into genre (name) values ('Mystery');
+insert into genre (name) values ('Fantasy');
+insert into genre (name) values ('Thriller');
+insert into genre (name) values ('Crime');

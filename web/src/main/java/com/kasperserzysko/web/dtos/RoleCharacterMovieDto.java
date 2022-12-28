@@ -5,8 +5,9 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class RoleCharacterDto {
-    
-    private Long id;
+public class RoleCharacterMovieDto {
+
     private String name;
+    private Long personId;
+
 }

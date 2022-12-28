@@ -8,6 +8,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="admin" />
+        <module name="security" />
         <module name="data" />
         <module name="web" />
       </profile>
@@ -15,6 +16,7 @@
     <bytecodeTargetLevel>
       <module name="admin" target="17" />
       <module name="API" target="17" />
+      <module name="security" target="17" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
@@ -22,6 +24,7 @@
       <module name="API" options="-parameters" />
       <module name="admin" options="-parameters" />
       <module name="data" options="-parameters" />
+      <module name="security" options="-parameters" />
       <module name="web" options="-parameters" />
     </option>
   </component>

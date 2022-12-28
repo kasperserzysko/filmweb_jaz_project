@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
-@ComponentScan(basePackages = "com.kasperserzysko.data")
+@ComponentScan(basePackages = {"com.kasperserzysko.data", "com.kasperserzysko.web"})
 public class WebApplication {
 
     public static void main(String[] args) {

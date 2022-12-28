@@ -39,8 +39,38 @@ public class User {
     private Set<Comment> commentsDisliked = new HashSet<>();
 
     @ManyToMany
+    @JoinTable(
+            name = "user_rolesLiked",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<RoleCharacter> rolesLiked = new HashSet<>();
 
     @ManyToMany
+    @JoinTable(
+            name = "user_rolesDisliked",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<RoleCharacter> rolesDisliked = new HashSet<>();
+
+
+    @ManyToMany
+    @JoinTable(
+            name = "user_moviesLiked",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "movie_id"))
+    private Set<Movie> moviesLiked = new HashSet<>();
+
+    @ManyToMany
+    @JoinTable(
+            name = "user_rolesDisliked",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "movie_id"))
+    private Set<Movie> moviesDisliked = new HashSet<>();
+
+    @ManyToMany
+    @JoinTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private Set<Role> roles = new HashSet<>();
 }

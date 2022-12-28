@@ -13,4 +13,7 @@ public interface PersonRepository extends JpaRepository<Person, Long> {
 
     @Query("SELECT p FROM Person p WHERE p.firstName LIKE %:keyword% OR p.lastName LIKE %:keyword%")
     List<Person> findPeopleByByKeyword(String keyword, Pageable pageable);
+
+    @Query(nativeQuery = true, value = "SELECT p.* FROM person p JOIN movie_producers mp on p.id = mp.person_id WHERE mp.movie_id = :movieId")
+    List<Person> getMovieProducers(Long movieId);
 }

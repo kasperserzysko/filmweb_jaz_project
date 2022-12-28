@@ -16,11 +16,12 @@ import java.util.Set;
 public class Person {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String firstName;
     private String lastName;
+    @Column(length = 1000)
     private String biography;
     private LocalDate birthday;
     private LocalDate deathday;
@@ -28,7 +29,7 @@ public class Person {
     @ManyToMany(mappedBy = "producers")
     private Set<Movie> moviesCreated = new HashSet<>();
 
-    @OneToMany
+    @OneToMany()
     private Set<RoleCharacter> moviesStarred = new HashSet<>();
 
 }
