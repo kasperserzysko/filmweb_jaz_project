@@ -44,6 +44,9 @@ public class PersonService implements IPersonService {
             personDto.setLastName(person.getLastName());
             return personDto;
         };
+        if (currentPage == null){
+            currentPage = 1;
+        }
         Pageable pageable = PageRequest.of(currentPage - 1, USERS_PER_PAGE);
 
         if (keyword != null ) {
@@ -70,7 +73,37 @@ public class PersonService implements IPersonService {
     public void deletePerson(Long id) {
         var oPersonEntity = db.getPeople().findById(id);
         if (oPersonEntity.isPresent()) {
+            var personEntity = oPersonEntity.get();
+
+            personEntity.getMoviesCreated().forEach(movie -> {
+                movie.removeProducer(personEntity);
+                db.getMovies().save(movie);
+            });
+
+            personEntity.getMoviesStarred().forEach(roleCharacter -> {
+                var movieEntity = roleCharacter.getMovie();
+                roleCharacter.removeActor();
+                db.getMovies().save(movieEntity);
+                db.getRoleCharacters().save(roleCharacter);
+            });
+
             db.getPeople().deleteById(id);
         }
+    }
+
+    @Override
+    public PersonDetailedDto getPerson(Long id) {
+        var oPersonEntity = db.getPeople().findById(id);
+        if (oPersonEntity.isPresent()) {
+            var personEntity = oPersonEntity.get();
+            var personDto = new PersonDetailedDto();
+            personDto.setFirstName(personEntity.getFirstName());
+            personDto.setLastName(personEntity.getLastName());
+            personDto.setBiography(personEntity.getBiography());
+            personDto.setBirthday(personEntity.getBirthday());
+            personDto.setDeathday(personEntity.getDeathday());
+            return personDto;
+        }
+        return null;
     }
 }

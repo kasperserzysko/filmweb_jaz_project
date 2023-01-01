@@ -1,6 +1,5 @@
 package com.kasperserzysko.web.services.interfaces;
 
-import com.kasperserzysko.data.models.User;
 import com.kasperserzysko.web.dtos.*;
 
 import java.util.List;
@@ -17,8 +16,9 @@ public interface IMovieService {
     List<RoleCharacterDto> getMovieRoles(Long movieId);
     void addMovieGenre(Long movieId, GenreIdDto dto);
     List<GenreDto> getMovieGenres(Long movieId);
-//    void likeMovie(Long movieId, User user);
-//    int getMovieLikes(Long movieId);
-//    void dislikeMovie(Long movie, User user);
-//    int getMovieDislikes(Long movieId);
+    void likeMovie(Long movieId, SecurityUserDto user);
+    int getMovieLikes(Long movieId);
+    void dislikeMovie(Long movieId, SecurityUserDto user);
+    int getMovieDislikes(Long movieId);
+    void removeLikeOrDislike(Long movieId, SecurityUserDto user);
 }

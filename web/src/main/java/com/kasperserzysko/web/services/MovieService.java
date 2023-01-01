@@ -2,7 +2,6 @@ package com.kasperserzysko.web.services;
 
 import com.kasperserzysko.data.models.Movie;
 import com.kasperserzysko.data.models.RoleCharacter;
-import com.kasperserzysko.data.models.User;
 import com.kasperserzysko.data.repositories.DataRepository;
 import com.kasperserzysko.web.dtos.*;
 import com.kasperserzysko.web.services.interfaces.IMovieService;
@@ -175,6 +174,69 @@ public class MovieService implements IMovieService {
         }).toList();
     }
 
+    @Override
+    public void likeMovie(Long movieId, SecurityUserDto user) {
+        var loggedUser = user.getUser();
+        var oMovieEntity = db.getMovies().findById(movieId);
+        if (oMovieEntity.isPresent()) {
+            var movieEntity = oMovieEntity.get();
+
+            loggedUser.likeMovie(movieEntity);
+
+            db.getMovies().save(movieEntity);
+            db.getUsers().save(loggedUser);
+        }
+    }
+
+    @Override
+    public int getMovieLikes(Long movieId) {
+        var oMovieEntity = db.getMovies().findById(movieId);
+        int likes = 0;
+        if (oMovieEntity.isPresent()) {
+            var movieEntity = oMovieEntity.get();
+            likes = movieEntity.getLikes().size();
+        }
+        return likes;
+    }
+
+    @Override
+    public void dislikeMovie(Long movieId, SecurityUserDto user) {
+        var loggedUser = user.getUser();
+        var oMovieEntity = db.getMovies().findById(movieId);
+        if (oMovieEntity.isPresent()) {
+            var movieEntity = oMovieEntity.get();
+
+            loggedUser.dislikeMovie(movieEntity);
+
+            db.getMovies().save(movieEntity);
+            db.getUsers().save(loggedUser);
+        }
+    }
+
+    @Override
+    public int getMovieDislikes(Long movieId) {
+        var oMovieEntity = db.getMovies().findById(movieId);
+        int disLikes = 0;
+        if (oMovieEntity.isPresent()) {
+            var movieEntity = oMovieEntity.get();
+            disLikes = movieEntity.getDislikes().size();
+        }
+        return disLikes;
+    }
+
+    @Override
+    public void removeLikeOrDislike(Long movieId, SecurityUserDto user) {
+        var loggedUser = user.getUser();
+        var oMovieEntity = db.getMovies().findById(movieId);
+        if (oMovieEntity.isPresent()) {
+            var movieEntity = oMovieEntity.get();
+
+            loggedUser.removeLikeOrDislike(movieEntity);
+
+            db.getMovies().save(movieEntity);
+            db.getUsers().save(loggedUser);
+        }
+    }
 
 
 }

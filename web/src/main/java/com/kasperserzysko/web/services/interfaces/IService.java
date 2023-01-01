@@ -8,4 +8,5 @@ public interface IService {
     MovieService getMovies();
     PersonService getPeople();
     IRoleCharacterService getRoleCharacters();
+    IUserService getUsers();
 }

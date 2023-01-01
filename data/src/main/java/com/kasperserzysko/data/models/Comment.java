@@ -22,7 +22,6 @@ public class Comment {
     private LocalDateTime addDate;
     private String title;
     private String content;
-    private int rating;
 
     @ManyToOne
     private User commentCreator;

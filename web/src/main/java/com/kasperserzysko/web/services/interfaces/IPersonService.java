@@ -11,4 +11,5 @@ public interface IPersonService {
     List<PersonDto> getPeople(String keyword, Integer currentPage);
     void updatePerson(Long id, PersonDetailedDto personDetailedDto);
     void deletePerson(Long id);
+    PersonDetailedDto getPerson(Long id);
 }

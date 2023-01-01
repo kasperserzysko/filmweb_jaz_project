@@ -73,4 +73,52 @@ public class User {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
+
+
+
+
+    public void likeMovie(Movie movie){
+        movie.getDislikes().remove(this);
+        movie.getLikes().add(this);
+        moviesLiked.add(movie);
+    }
+    public void dislikeMovie(Movie movie){
+        movie.getLikes().remove(this);
+        movie.getDislikes().add(this);
+        moviesDisliked.add(movie);
+    }
+    public void removeLikeOrDislike(Movie movie){
+        movie.getDislikes().remove(this);
+        movie.getLikes().remove(this);
+        moviesDisliked.remove(movie);
+        moviesLiked.remove(movie);
+    }
+    public void addComment(Comment comment){
+        comment.setCommentCreator(this);
+        comments.add(comment);
+    }
+    public void removeComment(Comment comment){
+        comment.setCommentCreator(null);
+        comments.remove(comment);
+    }
+    public void removeCommentLike(Comment comment){
+        comment.getUpVotes().remove(this);
+        commentsLiked.remove(comment);
+    }
+    public void removeCommentDislike(Comment comment){
+        comment.getDownVotes().remove(this);
+        commentsDisliked.remove(comment);
+    }
+    public void removeRoleLike(RoleCharacter roleCharacter){
+        roleCharacter.getRoleLikes().remove(this);
+        rolesLiked.remove(roleCharacter);
+    }
+    public void removeRoleDislike(RoleCharacter roleCharacter){
+        roleCharacter.getRoleDislikes().remove(this);
+        rolesDisliked.remove(roleCharacter);
+    }
+    public void removeRole(Role role){
+        role.getUsers().remove(this);
+        roles.remove(role);
+    }
 }

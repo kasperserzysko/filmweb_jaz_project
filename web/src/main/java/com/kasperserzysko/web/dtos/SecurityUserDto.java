@@ -7,11 +7,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 
-public class SecurityUser implements UserDetails {
+public class SecurityUserDto implements UserDetails {
 
-    private User user;
+    private final User user;
 
-    public SecurityUser(User user) {
+    public SecurityUserDto(User user) {
         this.user = user;
     }
 
@@ -48,5 +48,9 @@ public class SecurityUser implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    public User getUser(){
+        return user;
     }
 }
