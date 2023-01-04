@@ -6,11 +6,11 @@ import java.util.List;
 
 public interface IMovieService {
     void addMovie(MovieDetailsDto movieDetailsDto);
-    List<MovieDto> getMovies();
+    List<MovieDto> getMovies(String keyword, Integer currentPage);
     MovieDetailsDto getMovie(Long id);
     void updateMovie(Long id, MovieDetailsDto movieDetailsDto);
     void deleteMovie(Long id);
-    void addMovieProducer(Long movieId, PersonIdDto dto);                 //TODO NIE ZAPOMNIJ O LISTOWANIU
+    void addMovieProducer(Long movieId, PersonIdDto dto);
     List<PersonDto> getMovieProduces(Long movieId);
     void addMovieRoleCharacter(Long movieId, RoleCharacterMovieDto dto);
     List<RoleCharacterDto> getMovieRoles(Long movieId);
@@ -21,4 +21,7 @@ public interface IMovieService {
     void dislikeMovie(Long movieId, SecurityUserDto user);
     int getMovieDislikes(Long movieId);
     void removeLikeOrDislike(Long movieId, SecurityUserDto user);
+    void addComment(Long movieId, CommentDto dto, SecurityUserDto userDto);
+    List<CommentDetailedDto> getComments(Long movieId, Integer currentPage);
+    List<MovieDto> getTopMovies(Integer currentPage);
 }

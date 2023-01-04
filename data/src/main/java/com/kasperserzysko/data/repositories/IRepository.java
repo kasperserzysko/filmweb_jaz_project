@@ -8,4 +8,5 @@ public interface IRepository {
     UserRepository getUsers();
     PersonRepository getPeople();
     RoleCharacterRepository getRoleCharacters();
+    RoleRepository getRoles();
 }

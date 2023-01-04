@@ -67,7 +67,7 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "movie_id"))
     private Set<Movie> moviesDisliked = new HashSet<>();
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
@@ -116,6 +116,10 @@ public class User {
     public void removeRoleDislike(RoleCharacter roleCharacter){
         roleCharacter.getRoleDislikes().remove(this);
         rolesDisliked.remove(roleCharacter);
+    }
+    public void addRole(Role role){
+        role.getUsers().add(this);
+        roles.add(role);
     }
     public void removeRole(Role role){
         role.getUsers().remove(this);

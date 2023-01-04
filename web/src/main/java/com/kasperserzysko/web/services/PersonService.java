@@ -2,8 +2,10 @@ package com.kasperserzysko.web.services;
 
 import com.kasperserzysko.data.models.Person;
 import com.kasperserzysko.data.repositories.DataRepository;
+import com.kasperserzysko.web.dtos.MovieDto;
 import com.kasperserzysko.web.dtos.PersonDetailedDto;
 import com.kasperserzysko.web.dtos.PersonDto;
+import com.kasperserzysko.web.dtos.RoleCharacterDto;
 import com.kasperserzysko.web.services.interfaces.IPersonService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -105,5 +107,25 @@ public class PersonService implements IPersonService {
             return personDto;
         }
         return null;
+    }
+
+    @Override
+    public List<RoleCharacterDto> getRoles(Long personId) {
+        return db.getRoleCharacters().getPersonRoleCharactersByRating(personId).stream().map(roleCharacter -> {
+            var roleCharacterDto = new RoleCharacterDto();
+            roleCharacterDto.setId(roleCharacter.getId());
+            roleCharacterDto.setName(roleCharacter.getName());
+            return roleCharacterDto;
+        }).toList();
+    }
+
+    @Override
+    public List<MovieDto> getMovies(Long personId) {
+        return db.getMovies().getPersonMoviesByRating(personId).stream().map(movie -> {
+            var movieDto = new MovieDto();
+            movieDto.setId(movie.getId());
+            movieDto.setTitle(movie.getTitle());
+            return movieDto;
+        }).toList();
     }
 }

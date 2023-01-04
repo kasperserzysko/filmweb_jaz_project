@@ -11,14 +11,16 @@ public class DataRepository implements IRepository {
     private final PersonRepository personRepository;
     private final RoleCharacterRepository roleCharacterRepository;
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
 
-    public DataRepository(CommentRepository commentRepository, GenreRepository genreRepository, MovieRepository movieRepository, PersonRepository personRepository, RoleCharacterRepository roleCharacterRepository, UserRepository userRepository) {
+    public DataRepository(CommentRepository commentRepository, GenreRepository genreRepository, MovieRepository movieRepository, PersonRepository personRepository, RoleCharacterRepository roleCharacterRepository, UserRepository userRepository, RoleRepository roleRepository) {
         this.commentRepository = commentRepository;
         this.genreRepository = genreRepository;
         this.movieRepository = movieRepository;
         this.personRepository = personRepository;
         this.roleCharacterRepository = roleCharacterRepository;
         this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
     }
 
     @Override
@@ -49,5 +51,10 @@ public class DataRepository implements IRepository {
     @Override
     public RoleCharacterRepository getRoleCharacters() {
         return roleCharacterRepository;
+    }
+
+    @Override
+    public RoleRepository getRoles() {
+        return roleRepository;
     }
 }

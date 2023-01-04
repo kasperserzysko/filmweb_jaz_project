@@ -1,18 +1,24 @@
 package com.kasperserzysko.web.services;
 
+import com.kasperserzysko.data.models.Comment;
 import com.kasperserzysko.data.models.Movie;
 import com.kasperserzysko.data.models.RoleCharacter;
 import com.kasperserzysko.data.repositories.DataRepository;
 import com.kasperserzysko.web.dtos.*;
 import com.kasperserzysko.web.services.interfaces.IMovieService;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.function.Function;
 
 @Service
 public class MovieService implements IMovieService {
 
     private final DataRepository db;
+    private final static int ITEMS_PER_PAGE = 10;
 
     public MovieService(DataRepository db) {
         this.db = db;
@@ -29,13 +35,23 @@ public class MovieService implements IMovieService {
     }
 
     @Override
-    public List<MovieDto> getMovies() {
-        return db.getMovies().findAll().stream().map(movie -> {
+    public List<MovieDto> getMovies(String keyword, Integer currentPage) {
+        Function<Movie, MovieDto> movieMapper = movie -> {
             var movieDto = new MovieDto();
             movieDto.setId(movie.getId());
             movieDto.setTitle(movie.getTitle());
             return movieDto;
-        }).toList();
+        };
+
+        if (currentPage == null){
+            currentPage = 1;
+        }
+        Pageable pageable = PageRequest.of(currentPage - 1, ITEMS_PER_PAGE);
+
+        if(keyword == null){
+            return db.getMovies().getMovies(pageable).stream().map(movieMapper).toList();
+        }
+        return db.getMovies().getMoviesWithKeyword(keyword, pageable).stream().map(movieMapper).toList();
     }
 
     @Override
@@ -84,8 +100,10 @@ public class MovieService implements IMovieService {
                 movieEntity.removeGenre(genre);
                 db.getGenres().save(genre);
             });
-                                                                                    //TODO PAMIETAJ O SEKCJI KOMENTARZY TUTAJ
-
+            movieEntity.getComments().forEach(comment -> {
+                movieEntity.removeComment(comment);
+                db.getComments().save(comment);
+            });
 
             db.getMovies().deleteById(id);
         }
@@ -141,7 +159,7 @@ public class MovieService implements IMovieService {
 
     @Override
     public List<RoleCharacterDto> getMovieRoles(Long movieId) {
-        return db.getRoleCharacters().getRoleCharacterByMovieId(movieId).stream().map(roleCharacter -> {
+        return db.getRoleCharacters().getRoleCharactersByRating(movieId).stream().map(roleCharacter -> {
             var roleCharacterDto = new RoleCharacterDto();
             roleCharacterDto.setId(roleCharacter.getId());
             roleCharacterDto.setName(roleCharacter.getName());
@@ -236,6 +254,59 @@ public class MovieService implements IMovieService {
             db.getMovies().save(movieEntity);
             db.getUsers().save(loggedUser);
         }
+    }
+
+    @Override
+    public void addComment(Long movieId, CommentDto dto, SecurityUserDto user) {
+        var oMovieEntity = db.getMovies().findById(movieId);
+        var loggedUser = user.getUser();
+        if (oMovieEntity.isPresent()) {
+            var movieEntity = oMovieEntity.get();
+            var commentEntity = new Comment();
+
+            commentEntity.setAddDate(LocalDateTime.now());
+            commentEntity.setTitle(dto.getTitle());
+            commentEntity.setContent(dto.getContent());
+
+            loggedUser.addComment(commentEntity);
+            movieEntity.addComment(commentEntity);
+
+            db.getComments().save(commentEntity);
+            db.getUsers().save(loggedUser);
+            db.getMovies().save(movieEntity);
+        }
+    }
+
+    @Override
+    public List<CommentDetailedDto> getComments(Long movieId, Integer currentPage) {
+        if (currentPage == null){
+            currentPage = 1;
+        }
+        Pageable pageable = PageRequest.of(currentPage - 1, ITEMS_PER_PAGE);
+
+        return db.getComments().findAll(pageable).stream().map(comment -> {
+            var commentDto = new CommentDetailedDto();
+            commentDto.setId(comment.getId());
+            commentDto.setTitle(comment.getTitle());
+            commentDto.setContent(comment.getContent());
+            commentDto.setAddDate(comment.getAddDate());
+            return commentDto;
+        }).toList();
+    }
+
+    @Override
+    public List<MovieDto> getTopMovies(Integer currentPage) {
+        if (currentPage == null){
+            currentPage = 1;
+        }
+        Pageable pageable = PageRequest.of(currentPage - 1, ITEMS_PER_PAGE);
+
+        return db.getMovies().getMoviesByRating(pageable).stream().map(movie -> {
+            var movieDto = new MovieDto();
+            movieDto.setId(movie.getId());
+            movieDto.setTitle(movie.getTitle());
+            return movieDto;
+        }).toList();
     }
 
 

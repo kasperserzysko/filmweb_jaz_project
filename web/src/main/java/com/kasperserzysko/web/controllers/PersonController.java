@@ -1,10 +1,13 @@
 package com.kasperserzysko.web.controllers;
 
+import com.kasperserzysko.web.dtos.MovieDto;
 import com.kasperserzysko.web.dtos.PersonDetailedDto;
 import com.kasperserzysko.web.dtos.PersonDto;
+import com.kasperserzysko.web.dtos.RoleCharacterDto;
 import com.kasperserzysko.web.services.MainService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,12 +18,11 @@ public class PersonController {
 
     private final MainService mainService;
 
-
     public PersonController(MainService mainService) {
         this.mainService = mainService;
     }
 
-
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity addPerson(@RequestBody PersonDetailedDto dto){
         mainService.getPeople().addPerson(dto);
@@ -37,16 +39,28 @@ public class PersonController {
         return ResponseEntity.ok(mainService.getPeople().getPerson(id));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity updatePerson(@PathVariable("id") Long id, @RequestBody PersonDetailedDto dto){
         mainService.getPeople().updatePerson(id, dto);
         return new ResponseEntity(HttpStatus.OK);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity deletePerson(@PathVariable("id") Long id){
         mainService.getPeople().deletePerson(id);
         return new ResponseEntity(HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}/roles")
+    public ResponseEntity<List<RoleCharacterDto>> getPersonRoles(@PathVariable("id") Long id){
+        return ResponseEntity.ok(mainService.getPeople().getRoles(id));
+    }
+
+    @GetMapping("/{id}/productions")
+    public ResponseEntity<List<MovieDto>> getPersonMovies(@PathVariable("id") Long id){
+        return ResponseEntity.ok(mainService.getPeople().getMovies(id));
     }
 
 }

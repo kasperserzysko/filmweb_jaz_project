@@ -71,6 +71,15 @@ public class Movie {
         producers.remove(person);
     }
 
+    public void addComment(Comment comment){
+        comment.setMovie(this);
+        comments.add(comment);
+    }
+    public void removeComment(Comment comment){
+        comment.setMovie(null);
+        comments.remove(comment);
+    }
+
     public void addGenre(Genre genre){
         genre.getMovies().add(this);
         genres.add(genre);
