@@ -43,6 +43,7 @@ public class UserService implements UserDetailsService, IUserService {
         var userEntity = new User();
         userEntity.setEmail(dto.getEmail());
         userEntity.setPassword(passwordEncoder.encode(dto.getPassword()));
+        userEntity.addRole(db.getRoles().getRole("ROLE_USER").get());
         db.getUsers().save(userEntity);
     }
 

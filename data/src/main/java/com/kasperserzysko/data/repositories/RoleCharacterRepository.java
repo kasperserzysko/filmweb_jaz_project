@@ -12,12 +12,26 @@ import java.util.List;
 public interface RoleCharacterRepository extends JpaRepository<RoleCharacter, Long> {
 
 
-    @Query(nativeQuery = true, value = "SELECT rc.* FROM role_character rc inner join user_roles_liked url on rc.id = url.role_id where rc.movie_id = :movieId group by rc.name order by count(rc.id) desc LIMIT 50")
-    List<RoleCharacter> getRoleCharactersByRating(Long movieId);
+    @Query(nativeQuery = true, value = "SELECT rc.* FROM role_character rc\n" +
+            "    inner join (SELECT rc.id, count(rc.id) as likes_count FROM role_character rc inner join user_roles_liked url on rc.id = url.role_id group by rc.name) likes on rc.id = likes.id\n" +
+            "    inner join (SELECT rc.id, count(rc.id) as dislikes_count FROM role_character rc inner join user_roles_disliked urd on rc.id = urd.role_id group by rc.name) dislikes on rc.id = dislikes.id\n" +
+            "    where rc.movie_id = :movieId\n" +
+            "group by rc.id order by (likes.likes_count - dislikes.dislikes_count) desc")
+    List<RoleCharacter> getMovieRoleCharactersByRating(Long movieId);
 
-    @Query(nativeQuery = true, value = "SELECT rc.* FROM role_character rc inner join user_roles_liked url on rc.id = url.role_id where rc.actor_id = :personId group by rc.name order by count(rc.id) desc LIMIT 50")
+    @Query(nativeQuery = true, value = "SELECT rc.* FROM role_character rc\n" +
+            "    inner join (SELECT rc.id, count(rc.id) as likes_count FROM role_character rc inner join user_roles_liked url on rc.id = url.role_id group by rc.name) likes on rc.id = likes.id\n" +
+            "    inner join (SELECT rc.id, count(rc.id) as dislikes_count FROM role_character rc inner join user_roles_disliked urd on rc.id = urd.role_id group by rc.name) dislikes on rc.id = dislikes.id\n" +
+            "    where rc.actor_id = :personId\n" +
+            "group by rc.id order by (likes.likes_count - dislikes.dislikes_count) desc")
     List<RoleCharacter> getPersonRoleCharactersByRating(Long personId);
 
     @Query(nativeQuery = true, value = "SELECT rc.* FROM role rc inner join user_roles_liked url on rc.id = url.role_id WHERE url.user_id = :userId")
     List<RoleCharacter> getLikedRoleCharacters(Long userId, Pageable pageable);
+
+    @Query(nativeQuery = true, value = "SELECT rc.* FROM role_character rc\n" +
+            "    inner join (SELECT rc.id, count(rc.id) as likes_count FROM role_character rc inner join user_roles_liked url on rc.id = url.role_id group by rc.name) likes on rc.id = likes.id\n" +
+            "    inner join (SELECT rc.id, count(rc.id) as dislikes_count FROM role_character rc inner join user_roles_disliked urd on rc.id = urd.role_id group by rc.name) dislikes on rc.id = dislikes.id\n" +
+            "group by rc.id order by (likes.likes_count - dislikes.dislikes_count) desc LIMIT 100")
+    List<RoleCharacter> getRoleCharactersByRating();
 }

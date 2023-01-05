@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface PersonRepository extends JpaRepository<Person, Long> {
@@ -16,4 +17,7 @@ public interface PersonRepository extends JpaRepository<Person, Long> {
 
     @Query(nativeQuery = true, value = "SELECT p.* FROM person p JOIN movie_producers mp on p.id = mp.person_id WHERE mp.movie_id = :movieId")
     List<Person> getMovieProducers(Long movieId);
+
+    @Query(nativeQuery = true, value = "SELECT p.* FROM person p JOIN role_character rc on p.id = rc.actor_id WHERE rc.id = :personId")
+    Optional<Person> getRoleCharacterPerson(Long personId);
 }

@@ -62,7 +62,7 @@ public class User {
 
     @ManyToMany
     @JoinTable(
-            name = "user_rolesDisliked",
+            name = "user_moviesDisliked",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "movie_id"))
     private Set<Movie> moviesDisliked = new HashSet<>();

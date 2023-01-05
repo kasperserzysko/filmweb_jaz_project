@@ -159,7 +159,7 @@ public class MovieService implements IMovieService {
 
     @Override
     public List<RoleCharacterDto> getMovieRoles(Long movieId) {
-        return db.getRoleCharacters().getRoleCharactersByRating(movieId).stream().map(roleCharacter -> {
+        return db.getRoleCharacters().getMovieRoleCharactersByRating(movieId).stream().map(roleCharacter -> {
             var roleCharacterDto = new RoleCharacterDto();
             roleCharacterDto.setId(roleCharacter.getId());
             roleCharacterDto.setName(roleCharacter.getName());

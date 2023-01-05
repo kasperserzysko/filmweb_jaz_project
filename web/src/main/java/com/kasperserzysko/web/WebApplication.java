@@ -36,11 +36,16 @@ public class WebApplication implements CommandLineRunner {
         admin.setEmail("admin");
         admin.setPassword(passwordEncoder.encode("admin"));
 
-        db.getRoles().save(roleAdmin);
-        db.getRoles().save(roleUser);
-        admin.addRole(roleAdmin);
-        admin.addRole(roleUser);
-
-        db.getUsers().save(admin);
+        if(db.getRoles().getRole("ROLE_ADMIN").isEmpty()) {
+            db.getRoles().save(roleAdmin);
+            admin.addRole(roleAdmin);
+        }
+        if (db.getRoles().getRole("ROLE_USER").isEmpty()) {
+            db.getRoles().save(roleUser);
+            admin.addRole(roleUser);
+        }
+        if(db.getUsers().findUserByEmail("admin").isEmpty()){
+            db.getUsers().save(admin);
+        }
     }
 }
