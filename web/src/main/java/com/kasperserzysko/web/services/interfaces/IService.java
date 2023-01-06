@@ -9,4 +9,5 @@ public interface IService {
     PersonService getPeople();
     IRoleCharacterService getRoleCharacters();
     IUserService getUsers();
+    ICommentService getComments();
 }

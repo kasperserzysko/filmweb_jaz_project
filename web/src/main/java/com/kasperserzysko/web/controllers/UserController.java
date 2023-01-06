@@ -1,6 +1,7 @@
 package com.kasperserzysko.web.controllers;
 
 import com.kasperserzysko.web.dtos.*;
+import com.kasperserzysko.web.exceptions.UserNotFoundException;
 import com.kasperserzysko.web.services.MainService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,46 +29,81 @@ public class UserController {
     @PostMapping
     public ResponseEntity addUser(@RequestBody UserDetailedDto dto){
         mainService.getUsers().addUser(dto);
-        return new ResponseEntity(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<UserUsernameDto> getUser(@PathVariable("id") Long id){
-        return ResponseEntity.ok(mainService.getUsers().getUser(id));
+        try {
+            return ResponseEntity.ok(mainService.getUsers().getUser(id));
+        } catch (UserNotFoundException e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity updateUser(@PathVariable("id") Long id, @RequestBody UserDetailedDto dto){
-        mainService.getUsers().updateUser(id, dto);
-        return new ResponseEntity(HttpStatus.OK);
+        try {
+            mainService.getUsers().updateUser(id, dto);
+        } catch (UserNotFoundException e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity deleteUser(@PathVariable("id") Long id){
-        mainService.getUsers().deleteUser(id);
-        return new ResponseEntity(HttpStatus.OK);
+        try {
+            mainService.getUsers().deleteUser(id);
+        } catch (UserNotFoundException e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping("/{id}/likes_movies")
     public ResponseEntity<List<MovieDto>> getLikedMovies(@PathVariable("id") Long id, @RequestParam("page") Integer currentPage){
-        return ResponseEntity.ok(mainService.getUsers().getLikedMovies(id,currentPage));
+        try {
+            return ResponseEntity.ok(mainService.getUsers().getLikedMovies(id,currentPage));
+        } catch (UserNotFoundException e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @GetMapping("/{id}/likes_roles")
     public ResponseEntity<List<RoleCharacterDto>> getLikedRoles(@PathVariable("id") Long id, @RequestParam("page") Integer currentPage){
-        return ResponseEntity.ok(mainService.getUsers().getLikedRoleCharacters(id, currentPage));
+        try {
+            return ResponseEntity.ok(mainService.getUsers().getLikedRoleCharacters(id, currentPage));
+        } catch (UserNotFoundException e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @GetMapping("/{id}/comments")
     public ResponseEntity<List<CommentDto>> getComments(@PathVariable("id") Long id, @RequestParam("page") Integer currentPage){
-        return ResponseEntity.ok(mainService.getUsers().getComments(id, currentPage));
+        try {
+            return ResponseEntity.ok(mainService.getUsers().getComments(id, currentPage));
+        } catch (UserNotFoundException e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @GetMapping("/{id}/likes_comments")
     public ResponseEntity<List<CommentDto>> getLikedComments(@PathVariable("id") Long id, @RequestParam("page") Integer currentPage){
-        return ResponseEntity.ok(mainService.getUsers().getLikedComments(id, currentPage));
+        try {
+            return ResponseEntity.ok(mainService.getUsers().getLikedComments(id, currentPage));
+        } catch (UserNotFoundException e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
 }

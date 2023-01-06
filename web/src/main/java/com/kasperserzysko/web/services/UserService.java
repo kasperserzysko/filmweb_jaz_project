@@ -1,9 +1,9 @@
 package com.kasperserzysko.web.services;
 
-import com.kasperserzysko.data.models.Person;
 import com.kasperserzysko.data.models.User;
 import com.kasperserzysko.data.repositories.DataRepository;
 import com.kasperserzysko.web.dtos.*;
+import com.kasperserzysko.web.exceptions.UserNotFoundException;
 import com.kasperserzysko.web.services.interfaces.IUserService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -67,75 +67,73 @@ public class UserService implements UserDetailsService, IUserService {
     }
 
     @Override
-    public UserUsernameDto getUser(Long id) {
-        var oUserEntity = db.getUsers().findById(id);
-        if (oUserEntity.isPresent()) {
-            var userEntity = oUserEntity.get();
-            var userDto = new UserUsernameDto();
-            userDto.setUsername(userEntity.getEmail());
-            return userDto;
-        }
-        return null;
+    public UserUsernameDto getUser(Long userId) throws UserNotFoundException {
+        var userEntity = db.getUsers().findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("Couldn't find user with id: " + userId));
+
+        var userDto = new UserUsernameDto();
+        userDto.setUsername(userEntity.getEmail());
+        return userDto;
     }
 
     @Override
-    public void updateUser(Long id, UserDetailedDto dto) {
-        var oUserEntity = db.getUsers().findById(id);
-        if (oUserEntity.isPresent()) {
-            var userEntity = oUserEntity.get();
-            var userDto = new UserDetailedDto();
-            userEntity.setEmail(userDto.getEmail());
-            userEntity.setPassword(passwordEncoder.encode(userDto.getPassword()));
+    public void updateUser(Long userId, UserDetailedDto dto) throws UserNotFoundException {
+        var userEntity = db.getUsers().findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("Couldn't find user with id: " + userId));
 
-            db.getUsers().save(userEntity);
-        }
+        var userDto = new UserDetailedDto();
+        userEntity.setEmail(userDto.getEmail());
+        userEntity.setPassword(passwordEncoder.encode(userDto.getPassword()));
+
+        db.getUsers().save(userEntity);
     }
 
     @Override
-    public void deleteUser(Long id) {
-        var oUserEntity = db.getUsers().findById(id);
-        if (oUserEntity.isPresent()) {
-            var userEntity = oUserEntity.get();
+    public void deleteUser(Long userId) throws UserNotFoundException {
+        var userEntity = db.getUsers().findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("Couldn't find user with id: " + userId));
 
-            userEntity.getCommentsLiked().forEach(comment -> {
-                userEntity.removeCommentLike(comment);
-                db.getComments().save(comment);
-            });
-            userEntity.getCommentsDisliked().forEach(comment -> {
-                userEntity.removeCommentDislike(comment);
-                db.getComments().save(comment);
-            });
-            userEntity.getComments().forEach(comment -> {
-                userEntity.removeComment(comment);
-                db.getComments().save(comment);
-            });
-            userEntity.getMoviesLiked().forEach(movie -> {
-                userEntity.removeLikeOrDislike(movie);
-                db.getMovies().save(movie);
-            });
-            userEntity.getMoviesDisliked().forEach(movie -> {
-                userEntity.removeLikeOrDislike(movie);
-                db.getMovies().save(movie);
-            });
-            userEntity.getRolesLiked().forEach(roleCharacter -> {
-                userEntity.removeRoleLike(roleCharacter);
-                db.getRoleCharacters().save(roleCharacter);
-            });
-            userEntity.getRolesDisliked().forEach(roleCharacter -> {
-                userEntity.removeRoleDislike(roleCharacter);
-                db.getRoleCharacters().save(roleCharacter);
-            });
-            userEntity.getRoles().forEach(role -> {
-                userEntity.removeRole(role);
-                db.getRoles().save(role);
-            });
+        userEntity.getCommentsLiked().forEach(comment -> {
+            userEntity.removeCommentLike(comment);
+            db.getComments().save(comment);
+        });
+        userEntity.getCommentsDisliked().forEach(comment -> {
+            userEntity.removeCommentDislike(comment);
+            db.getComments().save(comment);
+        });
+        userEntity.getComments().forEach(comment -> {
+            userEntity.removeComment(comment);
+            db.getComments().save(comment);
+        });
+        userEntity.getMoviesLiked().forEach(movie -> {
+            userEntity.removeMovieLikeOrDislike(movie);
+            db.getMovies().save(movie);
+        });
+        userEntity.getMoviesDisliked().forEach(movie -> {
+            userEntity.removeMovieLikeOrDislike(movie);
+            db.getMovies().save(movie);
+        });
+        userEntity.getRolesLiked().forEach(roleCharacter -> {
+            userEntity.removeRoleLike(roleCharacter);
+            db.getRoleCharacters().save(roleCharacter);
+        });
+        userEntity.getRolesDisliked().forEach(roleCharacter -> {
+            userEntity.removeRoleDislike(roleCharacter);
+            db.getRoleCharacters().save(roleCharacter);
+        });
+        userEntity.getRoles().forEach(role -> {
+            userEntity.removeRole(role);
+            db.getRoles().save(role);
+        });
 
-            db.getMovies().deleteById(id);
-        }
+        db.getMovies().deleteById(userId);
     }
 
     @Override
-    public List<MovieDto> getLikedMovies(Long userId, Integer currentPage) {
+    public List<MovieDto> getLikedMovies(Long userId, Integer currentPage) throws UserNotFoundException {
+        db.getUsers().findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("Couldn't find user with id: " + userId));
+
         if (currentPage == null){
             currentPage = 1;
         }
@@ -149,7 +147,10 @@ public class UserService implements UserDetailsService, IUserService {
     }
 
     @Override
-    public List<RoleCharacterDto> getLikedRoleCharacters(Long userId, Integer currentPage) {
+    public List<RoleCharacterDto> getLikedRoleCharacters(Long userId, Integer currentPage) throws UserNotFoundException {
+        db.getUsers().findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("Couldn't find user with id: " + userId));
+
         if (currentPage == null){
             currentPage = 1;
         }
@@ -163,7 +164,10 @@ public class UserService implements UserDetailsService, IUserService {
     }
 
     @Override
-    public List<CommentDto> getComments(Long userId, Integer currentPage) {
+    public List<CommentDto> getComments(Long userId, Integer currentPage) throws UserNotFoundException {
+        db.getUsers().findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("Couldn't find user with id: " + userId));
+
         if (currentPage == null){
             currentPage = 1;
         }
@@ -177,7 +181,10 @@ public class UserService implements UserDetailsService, IUserService {
     }
 
     @Override
-    public List<CommentDto> getLikedComments(Long userId, Integer currentPage) {
+    public List<CommentDto> getLikedComments(Long userId, Integer currentPage) throws UserNotFoundException {
+        db.getUsers().findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("Couldn't find user with id: " + userId));
+
         if (currentPage == null){
             currentPage = 1;
         }

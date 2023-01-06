@@ -6,6 +6,7 @@ import com.kasperserzysko.web.dtos.MovieDto;
 import com.kasperserzysko.web.dtos.PersonDetailedDto;
 import com.kasperserzysko.web.dtos.PersonDto;
 import com.kasperserzysko.web.dtos.RoleCharacterDto;
+import com.kasperserzysko.web.exceptions.PersonNotFoundException;
 import com.kasperserzysko.web.services.interfaces.IPersonService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -58,59 +59,58 @@ public class PersonService implements IPersonService {
     }
 
     @Override
-    public void updatePerson(Long id, PersonDetailedDto personDetailedDto) {
-        var oPersonEntity = db.getPeople().findById(id);
-        if (oPersonEntity.isPresent()) {
-            var personEntity = oPersonEntity.get();
-            personEntity.setFirstName(personDetailedDto.getFirstName());
-            personEntity.setLastName(personDetailedDto.getLastName());
-            personEntity.setBiography(personDetailedDto.getBiography());
-            personEntity.setBirthday(personDetailedDto.getBirthday());
-            personEntity.setDeathday(personDetailedDto.getDeathday());
-            db.getPeople().save(personEntity);
-        }
+    public void updatePerson(Long personId, PersonDetailedDto personDetailedDto) throws PersonNotFoundException {
+        var personEntity = db.getPeople().findById(personId)
+                .orElseThrow(() -> new PersonNotFoundException("Can't find person with id: " + personId));
+
+        personEntity.setFirstName(personDetailedDto.getFirstName());
+        personEntity.setLastName(personDetailedDto.getLastName());
+        personEntity.setBiography(personDetailedDto.getBiography());
+        personEntity.setBirthday(personDetailedDto.getBirthday());
+        personEntity.setDeathday(personDetailedDto.getDeathday());
+
+        db.getPeople().save(personEntity);
     }
 
     @Override
-    public void deletePerson(Long id) {
-        var oPersonEntity = db.getPeople().findById(id);
-        if (oPersonEntity.isPresent()) {
-            var personEntity = oPersonEntity.get();
+    public void deletePerson(Long personId) throws PersonNotFoundException {
+        var personEntity = db.getPeople().findById(personId)
+                .orElseThrow(() -> new PersonNotFoundException("Can't find person with id: " + personId));
 
-            personEntity.getMoviesCreated().forEach(movie -> {
-                movie.removeProducer(personEntity);
-                db.getMovies().save(movie);
-            });
+        personEntity.getMoviesCreated().forEach(movie -> {
+            movie.removeProducer(personEntity);
+            db.getMovies().save(movie);
+        });
 
-            personEntity.getMoviesStarred().forEach(roleCharacter -> {
-                var movieEntity = roleCharacter.getMovie();
-                roleCharacter.removeActor();
-                db.getMovies().save(movieEntity);
-                db.getRoleCharacters().save(roleCharacter);
-            });
+        personEntity.getMoviesStarred().forEach(roleCharacter -> {
+            var movieEntity = roleCharacter.getMovie();
+            roleCharacter.removeActor();
+            db.getMovies().save(movieEntity);
+            db.getRoleCharacters().save(roleCharacter);
+        });
 
-            db.getPeople().deleteById(id);
-        }
+        db.getPeople().deleteById(personId);
     }
 
     @Override
-    public PersonDetailedDto getPerson(Long id) {
-        var oPersonEntity = db.getPeople().findById(id);
-        if (oPersonEntity.isPresent()) {
-            var personEntity = oPersonEntity.get();
-            var personDto = new PersonDetailedDto();
-            personDto.setFirstName(personEntity.getFirstName());
-            personDto.setLastName(personEntity.getLastName());
-            personDto.setBiography(personEntity.getBiography());
-            personDto.setBirthday(personEntity.getBirthday());
-            personDto.setDeathday(personEntity.getDeathday());
-            return personDto;
-        }
-        return null;
+    public PersonDetailedDto getPerson(Long personId) throws PersonNotFoundException {
+        var personEntity = db.getPeople().findById(personId)
+                .orElseThrow(() -> new PersonNotFoundException("Can't find person with id: " + personId));
+
+        var personDto = new PersonDetailedDto();
+        personDto.setFirstName(personEntity.getFirstName());
+        personDto.setLastName(personEntity.getLastName());
+        personDto.setBiography(personEntity.getBiography());
+        personDto.setBirthday(personEntity.getBirthday());
+        personDto.setDeathday(personEntity.getDeathday());
+        return personDto;
     }
 
     @Override
-    public List<RoleCharacterDto> getRoles(Long personId) {
+    public List<RoleCharacterDto> getRoles(Long personId) throws PersonNotFoundException {
+        db.getPeople().findById(personId)
+                .orElseThrow(() -> new PersonNotFoundException("Can't find person with id: " + personId));
+
         return db.getRoleCharacters().getPersonRoleCharactersByRating(personId).stream().map(roleCharacter -> {
             var roleCharacterDto = new RoleCharacterDto();
             roleCharacterDto.setId(roleCharacter.getId());
@@ -120,7 +120,10 @@ public class PersonService implements IPersonService {
     }
 
     @Override
-    public List<MovieDto> getMovies(Long personId) {
+    public List<MovieDto> getMovies(Long personId) throws PersonNotFoundException {
+        db.getPeople().findById(personId)
+                .orElseThrow(() -> new PersonNotFoundException("Can't find person with id: " + personId));
+
         return db.getMovies().getPersonMoviesByRating(personId).stream().map(movie -> {
             var movieDto = new MovieDto();
             movieDto.setId(movie.getId());

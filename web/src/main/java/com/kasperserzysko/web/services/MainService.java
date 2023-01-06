@@ -1,5 +1,6 @@
 package com.kasperserzysko.web.services;
 
+import com.kasperserzysko.web.services.interfaces.ICommentService;
 import com.kasperserzysko.web.services.interfaces.IRoleCharacterService;
 import com.kasperserzysko.web.services.interfaces.IService;
 import com.kasperserzysko.web.services.interfaces.IUserService;
@@ -12,12 +13,14 @@ public class MainService implements IService {
     private final PersonService personService;
     private final RoleCharacterService roleCharacterService;
     private final UserService userService;
+    private final CommentService commentService;
 
-    public MainService(MovieService movieService, PersonService personService, RoleCharacterService roleCharacterService, UserService userService) {
+    public MainService(MovieService movieService, PersonService personService, RoleCharacterService roleCharacterService, UserService userService, CommentService commentService) {
         this.movieService = movieService;
         this.personService = personService;
         this.roleCharacterService = roleCharacterService;
         this.userService = userService;
+        this.commentService = commentService;
     }
 
     @Override
@@ -38,5 +41,10 @@ public class MainService implements IService {
     @Override
     public IUserService getUsers() {
         return userService;
+    }
+
+    @Override
+    public ICommentService getComments() {
+        return commentService;
     }
 }

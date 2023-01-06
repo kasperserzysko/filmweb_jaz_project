@@ -4,6 +4,7 @@ import com.kasperserzysko.web.dtos.MovieDto;
 import com.kasperserzysko.web.dtos.PersonDetailedDto;
 import com.kasperserzysko.web.dtos.PersonDto;
 import com.kasperserzysko.web.dtos.RoleCharacterDto;
+import com.kasperserzysko.web.exceptions.PersonNotFoundException;
 import com.kasperserzysko.web.services.MainService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +27,7 @@ public class PersonController {
     @PostMapping
     public ResponseEntity addPerson(@RequestBody PersonDetailedDto dto){
         mainService.getPeople().addPerson(dto);
-        return new ResponseEntity(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping()
@@ -36,31 +37,56 @@ public class PersonController {
 
     @GetMapping("/{id}")
     public ResponseEntity<PersonDetailedDto> getPerson(@PathVariable("id") Long id){
-        return ResponseEntity.ok(mainService.getPeople().getPerson(id));
+        try {
+            return ResponseEntity.ok(mainService.getPeople().getPerson(id));
+        } catch (PersonNotFoundException e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity updatePerson(@PathVariable("id") Long id, @RequestBody PersonDetailedDto dto){
-        mainService.getPeople().updatePerson(id, dto);
-        return new ResponseEntity(HttpStatus.OK);
+        try {
+            mainService.getPeople().updatePerson(id, dto);
+        } catch (PersonNotFoundException e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity deletePerson(@PathVariable("id") Long id){
-        mainService.getPeople().deletePerson(id);
-        return new ResponseEntity(HttpStatus.OK);
+        try {
+            mainService.getPeople().deletePerson(id);
+        } catch (PersonNotFoundException e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping("/{id}/roles")
     public ResponseEntity<List<RoleCharacterDto>> getPersonRoles(@PathVariable("id") Long id){
-        return ResponseEntity.ok(mainService.getPeople().getRoles(id));
+        try {
+            return ResponseEntity.ok(mainService.getPeople().getRoles(id));
+        } catch (PersonNotFoundException e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @GetMapping("/{id}/productions")
     public ResponseEntity<List<MovieDto>> getPersonMovies(@PathVariable("id") Long id){
-        return ResponseEntity.ok(mainService.getPeople().getMovies(id));
+        try {
+            return ResponseEntity.ok(mainService.getPeople().getMovies(id));
+        } catch (PersonNotFoundException e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
 }
