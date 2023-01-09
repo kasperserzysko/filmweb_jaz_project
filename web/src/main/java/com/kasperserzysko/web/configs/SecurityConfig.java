@@ -1,4 +1,4 @@
-package com.kasperserzysko.web.security;
+package com.kasperserzysko.web.configs;
 
 import com.kasperserzysko.web.services.UserService;
 import org.springframework.context.annotation.Bean;

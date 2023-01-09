@@ -82,10 +82,18 @@ public class User {
         movie.getLikes().add(this);
         moviesLiked.add(movie);
     }
+    public void removeMovieLike(Movie movie){
+        movie.getLikes().remove(this);
+        moviesLiked.remove(movie);
+    }
     public void dislikeMovie(Movie movie){
         movie.getLikes().remove(this);
         movie.getDislikes().add(this);
         moviesDisliked.add(movie);
+    }
+    public void removeMovieDislike(Movie movie){
+        movie.getDislikes().remove(this);
+        moviesDisliked.remove(movie);
     }
     public void removeMovieLikeOrDislike(Movie movie){
         movie.getDislikes().remove(this);
@@ -93,6 +101,7 @@ public class User {
         moviesDisliked.remove(movie);
         moviesLiked.remove(movie);
     }
+
     public void addComment(Comment comment){
         comment.setCommentCreator(this);
         comments.add(comment);

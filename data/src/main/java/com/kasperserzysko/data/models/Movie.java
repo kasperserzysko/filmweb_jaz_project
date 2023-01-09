@@ -77,6 +77,7 @@ public class Movie {
     }
     public void removeComment(Comment comment){
         comment.setMovie(null);
+        comment.removeCommentCreator();
         comments.remove(comment);
     }
 

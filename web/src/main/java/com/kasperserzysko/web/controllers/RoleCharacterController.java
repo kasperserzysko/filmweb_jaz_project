@@ -84,10 +84,22 @@ public class RoleCharacterController {
         }
     }
 
-    @PostMapping("/{id}/removeLikes")
-    public ResponseEntity removeLikesOrDislikes(@PathVariable("id") Long id, @AuthenticationPrincipal SecurityUserDto securityUserDto){
+    @PreAuthorize("isAuthenticated()")
+    @DeleteMapping("/{id}/likes")
+    public ResponseEntity removeLike(@PathVariable("id") Long id, @AuthenticationPrincipal SecurityUserDto securityUserDto){
         try {
-            mainService.getRoleCharacters().removeLikesOrDislikes(id, securityUserDto);
+            mainService.getRoleCharacters().removeLike(id, securityUserDto);
+        } catch (RoleCharacterNotFoundException e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+    @PreAuthorize("isAuthenticated()")
+    @DeleteMapping("/{id}/dislikes")
+    public ResponseEntity removeDislike(@PathVariable("id") Long id, @AuthenticationPrincipal SecurityUserDto securityUserDto){
+        try {
+            mainService.getRoleCharacters().removeDislike(id, securityUserDto);
         } catch (RoleCharacterNotFoundException e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);

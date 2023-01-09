@@ -34,4 +34,10 @@ public class Comment {
 
     @ManyToMany(mappedBy = "commentsDisliked")
     private Set<User> downVotes = new HashSet<>();
+
+
+    public void removeCommentCreator(){
+        commentCreator.getComments().remove(this);
+        commentCreator = null;
+    }
 }

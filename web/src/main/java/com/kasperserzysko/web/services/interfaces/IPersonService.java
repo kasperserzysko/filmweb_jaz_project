@@ -12,7 +12,7 @@ public interface IPersonService {
 
     void addPerson(PersonDetailedDto personDetailedDto);
     List<PersonDto> getPeople(String keyword, Integer currentPage);
-    void updatePerson(Long id, PersonDetailedDto personDetailedDto) throws PersonNotFoundException;
+    PersonDetailedDto updatePerson(Long id, PersonDetailedDto personDetailedDto) throws PersonNotFoundException;
     void deletePerson(Long id) throws PersonNotFoundException;
     PersonDetailedDto getPerson(Long id) throws PersonNotFoundException;
     List<RoleCharacterDto> getRoles(Long personId) throws PersonNotFoundException;

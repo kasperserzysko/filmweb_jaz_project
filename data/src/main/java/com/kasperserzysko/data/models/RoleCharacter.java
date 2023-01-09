@@ -40,7 +40,5 @@ public class RoleCharacter {
     public void removeActor(){
         actor.getMoviesStarred().remove(this);
         actor = null;
-        movie.getCharacters().remove(this);
-        movie = null;
     }
 }

@@ -6,11 +6,13 @@ import com.kasperserzysko.data.repositories.DataRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @SpringBootApplication
 @ComponentScan(basePackages = {"com.kasperserzysko.data", "com.kasperserzysko.web"})
+@EnableCaching
 public class WebApplication implements CommandLineRunner {
 
     private final DataRepository db;

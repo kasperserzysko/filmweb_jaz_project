@@ -5,6 +5,9 @@ import com.kasperserzysko.data.repositories.DataRepository;
 import com.kasperserzysko.web.dtos.*;
 import com.kasperserzysko.web.exceptions.UserNotFoundException;
 import com.kasperserzysko.web.services.interfaces.IUserService;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -66,7 +69,9 @@ public class UserService implements UserDetailsService, IUserService {
         return db.getUsers().findAll(pageable).stream().map(userMapper).toList();
     }
 
+
     @Override
+    @Cacheable(cacheNames = "cacheUserUsername", key = "#userId")
     public UserUsernameDto getUser(Long userId) throws UserNotFoundException {
         var userEntity = db.getUsers().findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("Couldn't find user with id: " + userId));
@@ -89,6 +94,7 @@ public class UserService implements UserDetailsService, IUserService {
     }
 
     @Override
+    @CacheEvict(cacheNames = "cacheUserUsername", key = "#userId")
     public void deleteUser(Long userId) throws UserNotFoundException {
         var userEntity = db.getUsers().findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("Couldn't find user with id: " + userId));
@@ -101,7 +107,7 @@ public class UserService implements UserDetailsService, IUserService {
             userEntity.removeCommentDislike(comment);
             db.getComments().save(comment);
         });
-        userEntity.getComments().forEach(comment -> {
+        userEntity.getComments().forEach(comment -> {               //TODO usuń komentarze bez autora
             userEntity.removeComment(comment);
             db.getComments().save(comment);
         });
@@ -130,6 +136,7 @@ public class UserService implements UserDetailsService, IUserService {
     }
 
     @Override
+    @Cacheable(cacheNames = "cacheUserMovieList", key = "#userId")
     public List<MovieDto> getLikedMovies(Long userId, Integer currentPage) throws UserNotFoundException {
         db.getUsers().findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("Couldn't find user with id: " + userId));

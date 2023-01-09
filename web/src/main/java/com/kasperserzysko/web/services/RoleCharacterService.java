@@ -83,12 +83,24 @@ public class RoleCharacterService implements IRoleCharacterService {
     }
 
     @Override
-    public void removeLikesOrDislikes(Long roleCharacterId, SecurityUserDto securityUserDto) throws RoleCharacterNotFoundException {
+    public void removeLike(Long roleId, SecurityUserDto securityUserDto) throws RoleCharacterNotFoundException {
         var loggedUser = securityUserDto.getUser();
-        var roleCharacterEntity = db.getRoleCharacters().findById(roleCharacterId)
-                .orElseThrow(() -> new RoleCharacterNotFoundException("Can't find role character with id: " + roleCharacterId));
+        var roleCharacterEntity = db.getRoleCharacters().findById(roleId)
+                .orElseThrow(() -> new RoleCharacterNotFoundException("Can't find role character with id: " + roleId));
 
-        loggedUser.removeRoleLikeOrDislike(roleCharacterEntity);
+        loggedUser.removeRoleLike(roleCharacterEntity);
+
+        db.getRoleCharacters().save(roleCharacterEntity);
+        db.getUsers().save(loggedUser);
+    }
+
+    @Override
+    public void removeDislike(Long roleId, SecurityUserDto userDto) throws RoleCharacterNotFoundException {
+        var loggedUser = userDto.getUser();
+        var roleCharacterEntity = db.getRoleCharacters().findById(roleId)
+                .orElseThrow(() -> new RoleCharacterNotFoundException("Can't find role character with id: " + roleId));
+
+        loggedUser.removeRoleDislike(roleCharacterEntity);
 
         db.getRoleCharacters().save(roleCharacterEntity);
         db.getUsers().save(loggedUser);

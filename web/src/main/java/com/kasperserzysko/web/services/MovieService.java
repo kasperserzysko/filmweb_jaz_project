@@ -9,6 +9,10 @@ import com.kasperserzysko.web.exceptions.GenreNotFoundException;
 import com.kasperserzysko.web.exceptions.MovieNotFoundException;
 import com.kasperserzysko.web.exceptions.PersonNotFoundException;
 import com.kasperserzysko.web.services.interfaces.IMovieService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -18,6 +22,7 @@ import java.util.List;
 import java.util.function.Function;
 
 @Service
+@Slf4j
 public class MovieService implements IMovieService {
 
     private final DataRepository db;
@@ -58,7 +63,9 @@ public class MovieService implements IMovieService {
     }
 
     @Override
+    @Cacheable(cacheNames = "cacheMovieDetails", key = "#movieId")
     public MovieDetailsDto getMovie(Long movieId) throws MovieNotFoundException {
+        log.info("MOVIE FROM DB");
         var movieEntity = db.getMovies().findById(movieId)
                 .orElseThrow(() -> new MovieNotFoundException("Can't find movie with id: " + movieId));
 
@@ -71,7 +78,8 @@ public class MovieService implements IMovieService {
     }
 
     @Override
-    public void updateMovie(Long movieId, MovieDetailsDto movieDetailsDto) throws MovieNotFoundException {
+    @CachePut(cacheNames = "cacheMovieDetails", key = "#movieId")
+    public MovieDetailsDto updateMovie(Long movieId, MovieDetailsDto movieDetailsDto) throws MovieNotFoundException {
         var movieEntity = db.getMovies().findById(movieId)
                 .orElseThrow(() -> new MovieNotFoundException("Can't find movie with id: " + movieId));
 
@@ -80,16 +88,20 @@ public class MovieService implements IMovieService {
         movieEntity.setLength(movieDetailsDto.getLength());
         movieEntity.setDescription(movieDetailsDto.getDescription());
         db.getMovies().save(movieEntity);
+        return movieDetailsDto;
     }
 
     @Override
+    @CacheEvict(cacheNames = "cacheMovieDetails", key = "#movieId")
     public void deleteMovie(Long movieId) throws MovieNotFoundException {                           //Usuwam ręcznie film jak i wszystkie encje powiązane z nim, ponieważ usuwanie kaskadowe
         var movieEntity = db.getMovies().findById(movieId)                                   // nie zadziałało, kiedy niektóre z encji podrzędnych miały zostać zachowane.
                 .orElseThrow(() -> new MovieNotFoundException("Can't find movie with id: " + movieId));
 
         movieEntity.getCharacters().forEach(roleCharacter -> {
+            var personEntity = roleCharacter.getActor();
             movieEntity.removeCharacter(roleCharacter);
-            db.getRoleCharacters().save(roleCharacter);
+            db.getPeople().save(personEntity);
+            db.getRoleCharacters().delete(roleCharacter);
         });
         movieEntity.getProducers().forEach(person -> {
             movieEntity.removeProducer(person);
@@ -100,8 +112,10 @@ public class MovieService implements IMovieService {
             db.getGenres().save(genre);
         });
         movieEntity.getComments().forEach(comment -> {
+            var userEntity = comment.getCommentCreator();
             movieEntity.removeComment(comment);
-            db.getComments().save(comment);
+            db.getUsers().save(userEntity);
+            db.getComments().delete(comment);
         });
 
         db.getMovies().deleteById(movieId);
@@ -121,6 +135,7 @@ public class MovieService implements IMovieService {
     }
 
     @Override
+    @Cacheable(cacheNames = "cacheMovieProducerList", key = "#movieId")
     public List<PersonDto> getMovieProduces(Long movieId) throws MovieNotFoundException {
         db.getMovies().findById(movieId)
                 .orElseThrow(() -> new MovieNotFoundException("Can't find movie with id: " + movieId));
@@ -154,6 +169,7 @@ public class MovieService implements IMovieService {
     }
 
     @Override
+    @Cacheable(cacheNames = "cacheMovieRolesList", key = "#movieId")
     public List<RoleCharacterDto> getMovieRoles(Long movieId) throws MovieNotFoundException {
         db.getMovies().findById(movieId)
                 .orElseThrow(() -> new MovieNotFoundException("Can't find movie with id: " + movieId));
@@ -179,6 +195,7 @@ public class MovieService implements IMovieService {
     }
 
     @Override
+    @Cacheable(cacheNames = "cacheMovieGenreList", key = "#movieId")
     public List<GenreDto> getMovieGenres(Long movieId) throws MovieNotFoundException {
         db.getMovies().findById(movieId)
                 .orElseThrow(() -> new MovieNotFoundException("Can't find movie with id: " + movieId));
@@ -228,18 +245,6 @@ public class MovieService implements IMovieService {
                 .orElseThrow(() -> new MovieNotFoundException("Can't find movie with id: " + movieId));
 
         return movieEntity.getDislikes().size();
-    }
-
-    @Override
-    public void removeLikeOrDislike(Long movieId, SecurityUserDto user) throws MovieNotFoundException {
-        var loggedUser = user.getUser();
-        var movieEntity = db.getMovies().findById(movieId)
-                .orElseThrow(() -> new MovieNotFoundException("Can't find movie with id: " + movieId));
-
-        loggedUser.removeMovieLikeOrDislike(movieEntity);
-
-        db.getMovies().save(movieEntity);
-        db.getUsers().save(loggedUser);
     }
 
     @Override
@@ -295,6 +300,32 @@ public class MovieService implements IMovieService {
             movieDto.setTitle(movie.getTitle());
             return movieDto;
         }).toList();
+    }
+
+    @Override
+    public void removeLike(Long movieId, SecurityUserDto userDto) throws MovieNotFoundException {
+        var movieEntity = db.getMovies().findById(movieId)
+                .orElseThrow(() -> new MovieNotFoundException("Can't find movie with id: " + movieId));
+
+        var loggedUser = userDto.getUser();
+
+        loggedUser.removeMovieLike(movieEntity);
+
+        db.getUsers().save(loggedUser);
+        db.getMovies().save(movieEntity);
+    }
+
+    @Override
+    public void removeDislike(Long movieId, SecurityUserDto userDto) throws MovieNotFoundException {
+        var movieEntity = db.getMovies().findById(movieId)
+                .orElseThrow(() -> new MovieNotFoundException("Can't find movie with id: " + movieId));
+
+        var loggedUser = userDto.getUser();
+
+        loggedUser.removeMovieDislike(movieEntity);
+
+        db.getUsers().save(loggedUser);
+        db.getMovies().save(movieEntity);
     }
 
 

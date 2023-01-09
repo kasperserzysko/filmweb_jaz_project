@@ -8,6 +8,9 @@ import com.kasperserzysko.web.dtos.PersonDto;
 import com.kasperserzysko.web.dtos.RoleCharacterDto;
 import com.kasperserzysko.web.exceptions.PersonNotFoundException;
 import com.kasperserzysko.web.services.interfaces.IPersonService;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -59,7 +62,8 @@ public class PersonService implements IPersonService {
     }
 
     @Override
-    public void updatePerson(Long personId, PersonDetailedDto personDetailedDto) throws PersonNotFoundException {
+    @CachePut(cacheNames = "cachePersonDetails", key = "#personId")
+    public PersonDetailedDto updatePerson(Long personId, PersonDetailedDto personDetailedDto) throws PersonNotFoundException {
         var personEntity = db.getPeople().findById(personId)
                 .orElseThrow(() -> new PersonNotFoundException("Can't find person with id: " + personId));
 
@@ -70,9 +74,11 @@ public class PersonService implements IPersonService {
         personEntity.setDeathday(personDetailedDto.getDeathday());
 
         db.getPeople().save(personEntity);
+        return personDetailedDto;
     }
 
     @Override
+    @CacheEvict(cacheNames = "cachePersonDetails", key = "#personId")
     public void deletePerson(Long personId) throws PersonNotFoundException {
         var personEntity = db.getPeople().findById(personId)
                 .orElseThrow(() -> new PersonNotFoundException("Can't find person with id: " + personId));
@@ -93,6 +99,7 @@ public class PersonService implements IPersonService {
     }
 
     @Override
+    @Cacheable(cacheNames = "cachePersonDetails", key = "#personId")
     public PersonDetailedDto getPerson(Long personId) throws PersonNotFoundException {
         var personEntity = db.getPeople().findById(personId)
                 .orElseThrow(() -> new PersonNotFoundException("Can't find person with id: " + personId));
@@ -107,6 +114,7 @@ public class PersonService implements IPersonService {
     }
 
     @Override
+    @Cacheable(cacheNames = "cachePersonRoleList", key = "#personId")
     public List<RoleCharacterDto> getRoles(Long personId) throws PersonNotFoundException {
         db.getPeople().findById(personId)
                 .orElseThrow(() -> new PersonNotFoundException("Can't find person with id: " + personId));
@@ -120,6 +128,7 @@ public class PersonService implements IPersonService {
     }
 
     @Override
+    @Cacheable(cacheNames = "cachePersonProductionsList", key = "#personId")
     public List<MovieDto> getMovies(Long personId) throws PersonNotFoundException {
         db.getPeople().findById(personId)
                 .orElseThrow(() -> new PersonNotFoundException("Can't find person with id: " + personId));

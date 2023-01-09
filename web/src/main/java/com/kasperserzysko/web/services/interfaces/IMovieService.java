@@ -11,7 +11,7 @@ public interface IMovieService {
     void addMovie(MovieDetailsDto movieDetailsDto);
     List<MovieDto> getMovies(String keyword, Integer currentPage);
     MovieDetailsDto getMovie(Long id) throws MovieNotFoundException;
-    void updateMovie(Long id, MovieDetailsDto movieDetailsDto) throws MovieNotFoundException;
+    MovieDetailsDto updateMovie(Long id, MovieDetailsDto movieDetailsDto) throws MovieNotFoundException;
     void deleteMovie(Long id) throws MovieNotFoundException;
     void addMovieProducer(Long movieId, PersonIdDto dto) throws MovieNotFoundException, PersonNotFoundException;
     List<PersonDto> getMovieProduces(Long movieId) throws MovieNotFoundException;
@@ -23,8 +23,9 @@ public interface IMovieService {
     int getMovieLikes(Long movieId) throws MovieNotFoundException;
     void dislikeMovie(Long movieId, SecurityUserDto user) throws MovieNotFoundException;
     int getMovieDislikes(Long movieId) throws MovieNotFoundException;
-    void removeLikeOrDislike(Long movieId, SecurityUserDto user) throws MovieNotFoundException;
     void addComment(Long movieId, CommentDto dto, SecurityUserDto userDto) throws MovieNotFoundException;
     List<CommentDetailedDto> getComments(Long movieId, Integer currentPage) throws MovieNotFoundException;
     List<MovieDto> getTopMovies(Integer currentPage);
+    void removeLike(Long movieId, SecurityUserDto userDto) throws MovieNotFoundException;
+    void removeDislike(Long movieId, SecurityUserDto userDto) throws MovieNotFoundException;
 }

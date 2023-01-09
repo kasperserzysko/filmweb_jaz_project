@@ -209,10 +209,10 @@ public class MovieController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @PostMapping("/{id}/removeLike")
-    public ResponseEntity removeLikeOrDislkie(@PathVariable("id") Long id, @AuthenticationPrincipal SecurityUserDto securityUserDto){
+    @DeleteMapping("/{id}/like")
+    public ResponseEntity removeLike(@PathVariable("id") Long id, @AuthenticationPrincipal SecurityUserDto securityUserDto){
         try {
-            mainService.getMovies().removeLikeOrDislike(id,securityUserDto);
+            mainService.getMovies().removeLike(id,securityUserDto);
         } catch (MovieNotFoundException e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -220,4 +220,15 @@ public class MovieController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @PreAuthorize("isAuthenticated()")
+    @DeleteMapping("/{id}/dislike")
+    public ResponseEntity removeDislike(@PathVariable("id") Long id, @AuthenticationPrincipal SecurityUserDto securityUserDto){
+        try {
+            mainService.getMovies().removeDislike(id,securityUserDto);
+        } catch (MovieNotFoundException e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }

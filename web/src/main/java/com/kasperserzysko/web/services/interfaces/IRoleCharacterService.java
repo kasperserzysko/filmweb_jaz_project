@@ -2,7 +2,6 @@ package com.kasperserzysko.web.services.interfaces;
 
 import com.kasperserzysko.web.dtos.PersonDto;
 import com.kasperserzysko.web.dtos.RoleCharacterDto;
-import com.kasperserzysko.web.dtos.RoleCharacterMovieDto;
 import com.kasperserzysko.web.dtos.SecurityUserDto;
 import com.kasperserzysko.web.exceptions.RoleCharacterNotFoundException;
 
@@ -15,5 +14,6 @@ public interface IRoleCharacterService {
     int getRoleCharacterLikes(Long roleId) throws RoleCharacterNotFoundException;
     void dislikeRoleCharacter(Long roleId, SecurityUserDto securityUserDto) throws RoleCharacterNotFoundException;
     int getRoleCharacterDislikes(Long roleId) throws RoleCharacterNotFoundException;
-    void removeLikesOrDislikes(Long roleId, SecurityUserDto securityUserDto) throws RoleCharacterNotFoundException;
+    void removeLike(Long roleId, SecurityUserDto securityUserDto) throws RoleCharacterNotFoundException;
+    void removeDislike(Long roleId, SecurityUserDto userDto) throws RoleCharacterNotFoundException;
 }
