@@ -12,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RequestMapping("/people")
 @RestController
@@ -31,7 +32,7 @@ public class PersonController {
     }
 
     @GetMapping()
-    public ResponseEntity<List<PersonDto>> getPeople(@RequestParam("keyword") String keyword, @RequestParam("page") Integer currentPage){
+    public ResponseEntity<List<PersonDto>> getPeople(@RequestParam("keyword") Optional<String> keyword, @RequestParam("page") Optional<Integer> currentPage){
         return ResponseEntity.ok(mainService.getPeople().getPeople(keyword, currentPage));
     }
 
@@ -49,12 +50,11 @@ public class PersonController {
     @PutMapping("/{id}")
     public ResponseEntity updatePerson(@PathVariable("id") Long id, @RequestBody PersonDetailedDto dto){
         try {
-            mainService.getPeople().updatePerson(id, dto);
+            return ResponseEntity.ok(mainService.getPeople().updatePerson(id, dto));
         } catch (PersonNotFoundException e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -72,7 +72,7 @@ public class PersonController {
     @GetMapping("/{id}/roles")
     public ResponseEntity<List<RoleCharacterDto>> getPersonRoles(@PathVariable("id") Long id){
         try {
-            return ResponseEntity.ok(mainService.getPeople().getRoles(id));
+            return ResponseEntity.ok(mainService.getPeople().getRoles(id).getRoleCharacterDtos());
         } catch (PersonNotFoundException e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -82,7 +82,7 @@ public class PersonController {
     @GetMapping("/{id}/productions")
     public ResponseEntity<List<MovieDto>> getPersonMovies(@PathVariable("id") Long id){
         try {
-            return ResponseEntity.ok(mainService.getPeople().getMovies(id));
+            return ResponseEntity.ok(mainService.getPeople().getMovies(id).getMovieDtos());
         } catch (PersonNotFoundException e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);

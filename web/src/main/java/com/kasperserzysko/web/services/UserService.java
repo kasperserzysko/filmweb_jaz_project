@@ -2,6 +2,7 @@ package com.kasperserzysko.web.services;
 
 import com.kasperserzysko.data.models.User;
 import com.kasperserzysko.data.repositories.DataRepository;
+import com.kasperserzysko.web.cache.list_models.MovieList;
 import com.kasperserzysko.web.dtos.*;
 import com.kasperserzysko.web.exceptions.UserNotFoundException;
 import com.kasperserzysko.web.services.interfaces.IUserService;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 
 @Transactional(propagation= Propagation.REQUIRED, readOnly=true, noRollbackFor=Exception.class)
@@ -51,20 +53,18 @@ public class UserService implements UserDetailsService, IUserService {
     }
 
     @Override
-    public List<UserDto> getUsers(String keyword, Integer currentPage) {
+    public List<UserDto> getUsers(Optional<String> keyword, Optional<Integer> currentPageOptional) {
         Function<User, UserDto> userMapper = user -> {
             var userDto = new UserDto();
             userDto.setId(user.getId());
             userDto.setEmail(user.getEmail());
             return userDto;
         };
-        if (currentPage == null){
-            currentPage = 1;
-        }
+        int currentPage = currentPageOptional.orElse(1);
 
         Pageable pageable = PageRequest.of(currentPage - 1, ITEMS_PER_PAGE);
-        if (keyword != null ) {
-            return db.getUsers().getUsers(keyword, pageable).stream().map(userMapper).toList();
+        if (keyword.isPresent()) {
+            return db.getUsers().getUsers(keyword.get(), pageable).stream().map(userMapper).toList();
         }
         return db.getUsers().findAll(pageable).stream().map(userMapper).toList();
     }
@@ -136,15 +136,13 @@ public class UserService implements UserDetailsService, IUserService {
     }
 
     @Override
-    @Cacheable(cacheNames = "cacheUserMovieList", key = "#userId")
-    public List<MovieDto> getLikedMovies(Long userId, Integer currentPage) throws UserNotFoundException {
+    public List<MovieDto> getLikedMovies(Long userId, Optional<Integer> currentPageOptional) throws UserNotFoundException {
         db.getUsers().findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("Couldn't find user with id: " + userId));
 
-        if (currentPage == null){
-            currentPage = 1;
-        }
+        int currentPage = currentPageOptional.orElse(1);
         Pageable pageable = PageRequest.of(currentPage - 1, ITEMS_PER_PAGE);
+
         return db.getMovies().getLikedMovies(userId, pageable).stream().map(movie -> {
             var movieDto = new MovieDto();
             movieDto.setId(movie.getId());
@@ -171,13 +169,12 @@ public class UserService implements UserDetailsService, IUserService {
     }
 
     @Override
-    public List<CommentDto> getComments(Long userId, Integer currentPage) throws UserNotFoundException {
+    public List<CommentDto> getComments(Long userId, Optional<Integer> currentPageOptional) throws UserNotFoundException {
         db.getUsers().findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("Couldn't find user with id: " + userId));
 
-        if (currentPage == null){
-            currentPage = 1;
-        }
+        int currentPage = currentPageOptional.orElse(1);
+
         Pageable pageable = PageRequest.of(currentPage - 1, ITEMS_PER_PAGE);
         return db.getComments().getUserComments(userId, pageable).stream().map(comment -> {
             var commentDto = new CommentDto();
@@ -188,13 +185,11 @@ public class UserService implements UserDetailsService, IUserService {
     }
 
     @Override
-    public List<CommentDto> getLikedComments(Long userId, Integer currentPage) throws UserNotFoundException {
+    public List<CommentDto> getLikedComments(Long userId, Optional<Integer> currentPageOptional) throws UserNotFoundException {
         db.getUsers().findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("Couldn't find user with id: " + userId));
 
-        if (currentPage == null){
-            currentPage = 1;
-        }
+        int currentPage = currentPageOptional.orElse(1);
         Pageable pageable = PageRequest.of(currentPage - 1, ITEMS_PER_PAGE);
         return db.getComments().getLikedComments(userId, pageable).stream().map(comment -> {
             var commentDto = new CommentDto();

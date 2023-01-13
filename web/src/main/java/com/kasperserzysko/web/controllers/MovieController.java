@@ -4,6 +4,7 @@ import com.kasperserzysko.web.dtos.*;
 import com.kasperserzysko.web.exceptions.GenreNotFoundException;
 import com.kasperserzysko.web.exceptions.MovieNotFoundException;
 import com.kasperserzysko.web.exceptions.PersonNotFoundException;
+import com.kasperserzysko.web.exceptions.UserNotFoundException;
 import com.kasperserzysko.web.services.MainService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/movies")
@@ -31,7 +33,7 @@ public class MovieController {
     }
 
     @GetMapping
-    public ResponseEntity<List<MovieDto>> getMovies(@RequestParam("page") Integer currentPage, @RequestParam("keyword") String keyword){
+    public ResponseEntity<List<MovieDto>> getMovies(@RequestParam("page") Optional<Integer> currentPage, @RequestParam("keyword") Optional<String> keyword){
         return ResponseEntity.ok(mainService.getMovies().getMovies(keyword, currentPage));
     }
 
@@ -50,8 +52,7 @@ public class MovieController {
     @PutMapping("/{id}")
     public ResponseEntity updateMovie(@PathVariable("id") Long id, @RequestBody MovieDetailsDto dto){
         try {
-            mainService.getMovies().updateMovie(id, dto);
-            return new ResponseEntity<>(HttpStatus.OK);
+            return ResponseEntity.ok(mainService.getMovies().updateMovie(id, dto));
         } catch (MovieNotFoundException e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -73,7 +74,7 @@ public class MovieController {
     @GetMapping("/{id}/roles")
     public ResponseEntity<List<RoleCharacterDto>> getMovieRoles(@PathVariable("id") Long id){
         try {
-            return ResponseEntity.ok(mainService.getMovies().getMovieRoles(id));
+            return ResponseEntity.ok(mainService.getMovies().getMovieRoles(id).getRoleCharacterDtos());
         } catch (MovieNotFoundException e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -96,7 +97,7 @@ public class MovieController {
     @GetMapping("/{id}/genres")
     public ResponseEntity<List<GenreDto>> getMovieGenres(@PathVariable("id") Long id){
         try {
-            return ResponseEntity.ok(mainService.getMovies().getMovieGenres(id));
+            return ResponseEntity.ok(mainService.getMovies().getMovieGenres(id).getGenreDtos());
         } catch (MovieNotFoundException e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -118,7 +119,7 @@ public class MovieController {
     @GetMapping("/{id}/producers")
     public ResponseEntity<List<PersonDto>> getMovieProducers(@PathVariable("id") Long movieId){
         try {
-            return ResponseEntity.ok(mainService.getMovies().getMovieProduces(movieId));
+            return ResponseEntity.ok(mainService.getMovies().getMovieProduces(movieId).getPeopleDtos());
         } catch (MovieNotFoundException e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -142,7 +143,7 @@ public class MovieController {
     public ResponseEntity likeMovie(@PathVariable("id") Long id, @AuthenticationPrincipal SecurityUserDto securityUser){
         try {
             mainService.getMovies().likeMovie(id, securityUser);
-        } catch (MovieNotFoundException e) {
+        } catch (MovieNotFoundException | UserNotFoundException e ) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -164,7 +165,7 @@ public class MovieController {
     public ResponseEntity dislikeMovie(@PathVariable("id") Long id, @AuthenticationPrincipal SecurityUserDto securityUser){
         try {
             mainService.getMovies().dislikeMovie(id, securityUser);
-        } catch (MovieNotFoundException e) {
+        } catch (MovieNotFoundException | UserNotFoundException e ) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -186,7 +187,7 @@ public class MovieController {
     public ResponseEntity addComment(@PathVariable("id") Long id, @AuthenticationPrincipal SecurityUserDto securityUserDto, @RequestBody CommentDto dto){
         try {
             mainService.getMovies().addComment(id, dto, securityUserDto);
-        } catch (MovieNotFoundException e) {
+        } catch (MovieNotFoundException | UserNotFoundException e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -194,7 +195,7 @@ public class MovieController {
     }
 
     @GetMapping("/{id}/comments")
-    public ResponseEntity<List<CommentDetailedDto>> getComments(@PathVariable("id") Long id, @RequestParam("page") Integer currentPage){
+    public ResponseEntity<List<CommentDetailedDto>> getComments(@PathVariable("id") Long id, @RequestParam("page") Optional<Integer> currentPage){
         try {
             return ResponseEntity.ok(mainService.getMovies().getComments(id, currentPage));
         } catch (MovieNotFoundException e) {
@@ -204,7 +205,7 @@ public class MovieController {
     }
 
     @GetMapping("/top")
-    public ResponseEntity<List<MovieDto>> getTopMovies(@RequestParam("page") Integer currentPage){
+    public ResponseEntity<List<MovieDto>> getTopMovies(@RequestParam("page") Optional<Integer> currentPage){
         return ResponseEntity.ok(mainService.getMovies().getTopMovies(currentPage));
     }
 

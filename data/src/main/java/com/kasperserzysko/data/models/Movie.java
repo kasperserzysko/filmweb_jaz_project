@@ -25,14 +25,14 @@ public class Movie {
     private LocalDate premiere;
     private int length;
 
-    @ManyToMany(cascade = CascadeType.REMOVE)
+    @ManyToMany()
     @JoinTable(
             name = "movie_genres",
             joinColumns = @JoinColumn(name = "movie_id"),
             inverseJoinColumns = @JoinColumn(name = "genre_id"))
     private Set<Genre> genres = new HashSet<>();
 
-    @ManyToMany(cascade = CascadeType.REMOVE)
+    @ManyToMany()
     @JoinTable(
             name = "movie_producers",
             joinColumns = @JoinColumn(name = "movie_id"),

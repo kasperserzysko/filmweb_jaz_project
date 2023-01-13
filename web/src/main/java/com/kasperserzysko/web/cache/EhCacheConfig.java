@@ -1,5 +1,8 @@
-package com.kasperserzysko.web.configs;
+package com.kasperserzysko.web.cache;
 
+import com.kasperserzysko.web.cache.list_models.GenreList;
+import com.kasperserzysko.web.cache.list_models.PersonList;
+import com.kasperserzysko.web.cache.list_models.RoleCharacterList;
 import com.kasperserzysko.web.dtos.*;
 import org.ehcache.config.CacheConfiguration;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
@@ -21,21 +24,6 @@ import java.util.Collection;
 @Configuration
 public class EhCacheConfig {
 
-    private class RoleCharacterList extends ArrayList<RoleCharacterDto> implements Serializable {
-        public RoleCharacterList(final Collection<? extends RoleCharacterDto> c) {
-            super(c);
-        }
-    }
-    private class GenreList extends ArrayList<GenreDto> implements Serializable{
-        public GenreList(final Collection<? extends GenreDto> c) {
-            super(c);
-        }
-    }
-    private class PersonList extends ArrayList<PersonDto> implements Serializable {
-        public PersonList(final Collection<? extends PersonDto> c) {
-            super(c);
-        }
-    }
     private class MovieList extends ArrayList<MovieDto> implements Serializable {
         public MovieList(final Collection<? extends MovieDto> c) {
             super(c);
@@ -115,7 +103,6 @@ public class EhCacheConfig {
         cacheManager.createCache("cachePersonRoleList", personListConfiguration);
         cacheManager.createCache("cachePersonProductionsList", movieListConfiguration);
         cacheManager.createCache("cacheUserUsername", userUsernameConfiguration);
-        cacheManager.createCache("cacheUserMovieList", movieListConfiguration);
 
         return cacheManager;
     }

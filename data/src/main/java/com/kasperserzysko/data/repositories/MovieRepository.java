@@ -20,7 +20,7 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
     @Query(nativeQuery = true, value = "select m.* from movie m\n" +
             "    inner join (select m.id, count(m.id) as likes_count from movie m inner join user_movies_liked uml on m.id = uml.movie_id group by m.id) likes on m.id = likes.id\n" +
             "    inner join (select m.id, count(m.id) as dislikes_count from movie m inner join user_movies_disliked umd on m.id = umd.movie_id group by m.id) dislikes on m.id = dislikes.id\n" +
-            "group by m.id order by (likes.likes_count - dislikes.dislikes_count) desc LIMIT 100")
+            "group by m.id order by (likes.likes_count - dislikes.dislikes_count) desc")
     List<Movie> getMoviesByRating(Pageable pageable);
 
     @Query(nativeQuery = true, value = "select m.* from movie m\n" +
@@ -33,4 +33,10 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
 
     @Query(nativeQuery = true, value = "SELECT m.* FROM Movie m inner join user_movies_liked uml on m.id = uml.movie_id WHERE uml.user_id = :personId order by m.title")
     List<Movie> getLikedMovies(Long personId, Pageable pageable);
+
+    @Query(nativeQuery = true, value = "SELECT COUNT(user_id) FROM user_movies_liked where movie_id = :movieId")
+    int getMovieLikes(Long movieId);
+
+    @Query(nativeQuery = true, value = "SELECT COUNT(user_id) FROM user_movies_disliked where movie_id = :movieId")
+    int getMovieDislikes(Long movieId);
 }

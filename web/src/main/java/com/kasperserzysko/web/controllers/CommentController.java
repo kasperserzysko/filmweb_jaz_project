@@ -44,10 +44,9 @@ public class CommentController {
     }
 
     @GetMapping("/{id}/likes")
-    public ResponseEntity getCommentLikes(@PathVariable("id") Long id){
+    public ResponseEntity<Integer> getCommentLikes(@PathVariable("id") Long id){
         try {
-            mainService.getComments().getCommentLikes(id);
-            return new ResponseEntity<>(HttpStatus.OK);
+            return ResponseEntity.ok(mainService.getComments().getCommentLikes(id));
         } catch (CommentNotFoundException e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -67,8 +66,7 @@ public class CommentController {
     @GetMapping("/{id}/dislikes")
     public ResponseEntity getCommentDislikes(@PathVariable("id") Long id){
         try {
-            mainService.getComments().getCommentDislikes(id);
-            return new ResponseEntity<>(HttpStatus.OK);
+            return ResponseEntity.ok(mainService.getComments().getCommentDislikes(id));
         } catch (CommentNotFoundException e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);

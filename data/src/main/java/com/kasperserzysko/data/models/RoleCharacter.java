@@ -34,7 +34,7 @@ public class RoleCharacter {
 
 
     public void addActor(Person person){
-        actor.getMoviesStarred().add(this);
+        person.getMoviesStarred().add(this);
         actor = person;
     }
     public void removeActor(){

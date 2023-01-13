@@ -9,6 +9,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/users")
@@ -21,7 +22,7 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<List<UserDto>> getUsers(@RequestParam("page") Integer currentPage, @RequestParam("keyword") String keyword){
+    public ResponseEntity<List<UserDto>> getUsers(@RequestParam("page") Optional<Integer> currentPage, @RequestParam("keyword") Optional<String> keyword){
         return ResponseEntity.ok(mainService.getUsers().getUsers(keyword, currentPage));
     }
 
@@ -67,7 +68,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}/likes_movies")
-    public ResponseEntity<List<MovieDto>> getLikedMovies(@PathVariable("id") Long id, @RequestParam("page") Integer currentPage){
+    public ResponseEntity<List<MovieDto>> getLikedMovies(@PathVariable("id") Long id, @RequestParam("page") Optional<Integer> currentPage){
         try {
             return ResponseEntity.ok(mainService.getUsers().getLikedMovies(id,currentPage));
         } catch (UserNotFoundException e) {
@@ -87,7 +88,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}/comments")
-    public ResponseEntity<List<CommentDto>> getComments(@PathVariable("id") Long id, @RequestParam("page") Integer currentPage){
+    public ResponseEntity<List<CommentDto>> getComments(@PathVariable("id") Long id, @RequestParam("page") Optional<Integer> currentPage){
         try {
             return ResponseEntity.ok(mainService.getUsers().getComments(id, currentPage));
         } catch (UserNotFoundException e) {
@@ -97,7 +98,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}/likes_comments")
-    public ResponseEntity<List<CommentDto>> getLikedComments(@PathVariable("id") Long id, @RequestParam("page") Integer currentPage){
+    public ResponseEntity<List<CommentDto>> getLikedComments(@PathVariable("id") Long id, @RequestParam("page") Optional<Integer>  currentPage){
         try {
             return ResponseEntity.ok(mainService.getUsers().getLikedComments(id, currentPage));
         } catch (UserNotFoundException e) {

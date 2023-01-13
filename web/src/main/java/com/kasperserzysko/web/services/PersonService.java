@@ -2,6 +2,8 @@ package com.kasperserzysko.web.services;
 
 import com.kasperserzysko.data.models.Person;
 import com.kasperserzysko.data.repositories.DataRepository;
+import com.kasperserzysko.web.cache.list_models.MovieList;
+import com.kasperserzysko.web.cache.list_models.RoleCharacterList;
 import com.kasperserzysko.web.dtos.MovieDto;
 import com.kasperserzysko.web.dtos.PersonDetailedDto;
 import com.kasperserzysko.web.dtos.PersonDto;
@@ -16,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 
 @Service
@@ -41,7 +44,7 @@ public class PersonService implements IPersonService {
     }
 
     @Override
-    public List<PersonDto> getPeople(String keyword, Integer currentPage) {
+    public List<PersonDto> getPeople(Optional<String> keyword, Optional<Integer> currentPageOptional) {
         final int USERS_PER_PAGE = 10;
         Function<Person,PersonDto> personMapper = person -> {
             var personDto = new PersonDto();
@@ -50,13 +53,12 @@ public class PersonService implements IPersonService {
             personDto.setLastName(person.getLastName());
             return personDto;
         };
-        if (currentPage == null){
-            currentPage = 1;
-        }
+
+        int currentPage = currentPageOptional.orElse(1);
         Pageable pageable = PageRequest.of(currentPage - 1, USERS_PER_PAGE);
 
-        if (keyword != null ) {
-            return db.getPeople().findPeopleByByKeyword(keyword, pageable).stream().map(personMapper).toList();
+        if (keyword.isPresent()) {
+            return db.getPeople().findPeopleByByKeyword(keyword.get(), pageable).stream().map(personMapper).toList();
         }
         return db.getPeople().findAll(pageable).getContent().stream().map(personMapper).toList();
     }
@@ -115,29 +117,32 @@ public class PersonService implements IPersonService {
 
     @Override
     @Cacheable(cacheNames = "cachePersonRoleList", key = "#personId")
-    public List<RoleCharacterDto> getRoles(Long personId) throws PersonNotFoundException {
+    public RoleCharacterList getRoles(Long personId) throws PersonNotFoundException {
         db.getPeople().findById(personId)
                 .orElseThrow(() -> new PersonNotFoundException("Can't find person with id: " + personId));
 
-        return db.getRoleCharacters().getPersonRoleCharactersByRating(personId).stream().map(roleCharacter -> {
+        List<RoleCharacterDto> roleCharacterDtos = db.getRoleCharacters().getPersonRoleCharactersByRating(personId).stream().map(roleCharacter -> {
             var roleCharacterDto = new RoleCharacterDto();
             roleCharacterDto.setId(roleCharacter.getId());
             roleCharacterDto.setName(roleCharacter.getName());
             return roleCharacterDto;
         }).toList();
+
+        return new RoleCharacterList(roleCharacterDtos);
     }
 
     @Override
     @Cacheable(cacheNames = "cachePersonProductionsList", key = "#personId")
-    public List<MovieDto> getMovies(Long personId) throws PersonNotFoundException {
+    public MovieList getMovies(Long personId) throws PersonNotFoundException {
         db.getPeople().findById(personId)
                 .orElseThrow(() -> new PersonNotFoundException("Can't find person with id: " + personId));
 
-        return db.getMovies().getPersonMoviesByRating(personId).stream().map(movie -> {
+        List<MovieDto> movieDtos = db.getMovies().getPersonMoviesByRating(personId).stream().map(movie -> {
             var movieDto = new MovieDto();
             movieDto.setId(movie.getId());
             movieDto.setTitle(movie.getTitle());
             return movieDto;
         }).toList();
+        return new MovieList(movieDtos);
     }
 }
