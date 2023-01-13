@@ -30,4 +30,16 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT u FROM User u LEFT JOIN FETCH u.comments WHERE u.id = :userId")
     Optional<User> getUserWithComments(Long userId);
+
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.commentsLiked WHERE u.id = :userId")
+    Optional<User> getUserWithCommentsLiked(Long userId);
+
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.commentsDisliked WHERE u.id = :userId")
+    Optional<User> getUserWithCommentsDisliked(Long userId);
+
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.rolesLiked WHERE u.id = :userId")
+    Optional<User> getUserWithRolesLiked(Long userId);
+
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.rolesDisliked WHERE u.id = :userId")
+    Optional<User> getUserWithRolesDisliked(Long userId);
 }

@@ -25,21 +25,21 @@ public class Movie {
     private LocalDate premiere;
     private int length;
 
-    @ManyToMany()
+    @ManyToMany
     @JoinTable(
             name = "movie_genres",
             joinColumns = @JoinColumn(name = "movie_id"),
             inverseJoinColumns = @JoinColumn(name = "genre_id"))
     private Set<Genre> genres = new HashSet<>();
 
-    @ManyToMany()
+    @ManyToMany
     @JoinTable(
             name = "movie_producers",
             joinColumns = @JoinColumn(name = "movie_id"),
             inverseJoinColumns = @JoinColumn(name = "person_id"))
     private Set<Person> producers = new HashSet<>();
 
-    @OneToMany()
+    @OneToMany
     private Set<RoleCharacter> characters = new HashSet<>();
 
     @OneToMany

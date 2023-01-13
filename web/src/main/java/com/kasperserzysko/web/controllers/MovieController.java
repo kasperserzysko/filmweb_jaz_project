@@ -214,7 +214,7 @@ public class MovieController {
     public ResponseEntity removeLike(@PathVariable("id") Long id, @AuthenticationPrincipal SecurityUserDto securityUserDto){
         try {
             mainService.getMovies().removeLike(id,securityUserDto);
-        } catch (MovieNotFoundException e) {
+        } catch (MovieNotFoundException | UserNotFoundException e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -226,7 +226,7 @@ public class MovieController {
     public ResponseEntity removeDislike(@PathVariable("id") Long id, @AuthenticationPrincipal SecurityUserDto securityUserDto){
         try {
             mainService.getMovies().removeDislike(id,securityUserDto);
-        } catch (MovieNotFoundException e) {
+        } catch (MovieNotFoundException | UserNotFoundException e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }

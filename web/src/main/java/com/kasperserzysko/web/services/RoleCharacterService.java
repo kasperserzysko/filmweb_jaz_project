@@ -1,16 +1,15 @@
 package com.kasperserzysko.web.services;
 
-import com.kasperserzysko.data.models.Person;
 import com.kasperserzysko.data.repositories.DataRepository;
 import com.kasperserzysko.web.dtos.PersonDto;
 import com.kasperserzysko.web.dtos.RoleCharacterDto;
 import com.kasperserzysko.web.dtos.SecurityUserDto;
 import com.kasperserzysko.web.exceptions.RoleCharacterNotFoundException;
+import com.kasperserzysko.web.exceptions.UserNotFoundException;
 import com.kasperserzysko.web.services.interfaces.IRoleCharacterService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class RoleCharacterService implements IRoleCharacterService {
@@ -45,64 +44,72 @@ public class RoleCharacterService implements IRoleCharacterService {
     }
 
     @Override
-    public void likeRoleCharacter(Long roleCharacterId, SecurityUserDto securityUserDto) throws RoleCharacterNotFoundException {
+    public void likeRoleCharacter(Long roleCharacterId, SecurityUserDto securityUserDto) throws RoleCharacterNotFoundException, UserNotFoundException {
         var loggedUser = securityUserDto.getUser();
         var roleCharacterEntity = db.getRoleCharacters().findById(roleCharacterId)
                 .orElseThrow(() -> new RoleCharacterNotFoundException("Can't find role character with id: " + roleCharacterId));
+        var loggedUserWithRolesLiked = db.getUsers().getUserWithRolesLiked(loggedUser.getId()).
+                orElseThrow(() -> new UserNotFoundException("Couldn't find user with id: " + loggedUser.getId()));
 
-        loggedUser.addRoleLike(roleCharacterEntity);
+        loggedUserWithRolesLiked.addRoleLike(roleCharacterEntity);
 
         db.getRoleCharacters().save(roleCharacterEntity);
-        db.getUsers().save(loggedUser);
+        db.getUsers().save(loggedUserWithRolesLiked);
     }
 
     @Override
     public int getRoleCharacterLikes(Long roleCharacterId) throws RoleCharacterNotFoundException {
-        var roleCharacterEntity = db.getRoleCharacters().findById(roleCharacterId)
+        db.getRoleCharacters().findById(roleCharacterId)
                 .orElseThrow(() -> new RoleCharacterNotFoundException("Can't find role character with id: " + roleCharacterId));
-        return roleCharacterEntity.getRoleLikes().size();
+        return db.getRoleCharacters().getRoleLikes(roleCharacterId);
     }
 
     @Override
-    public void dislikeRoleCharacter(Long roleCharacterId, SecurityUserDto securityUserDto) throws RoleCharacterNotFoundException {
+    public void dislikeRoleCharacter(Long roleCharacterId, SecurityUserDto securityUserDto) throws RoleCharacterNotFoundException, UserNotFoundException {
         var loggedUser = securityUserDto.getUser();
         var roleCharacterEntity = db.getRoleCharacters().findById(roleCharacterId)
                 .orElseThrow(() -> new RoleCharacterNotFoundException("Can't find role character with id: " + roleCharacterId));
+        var loggedUserWithRolesDisliked = db.getUsers().getUserWithRolesDisliked(loggedUser.getId()).
+                orElseThrow(() -> new UserNotFoundException("Couldn't find user with id: " + loggedUser.getId()));
 
-        loggedUser.addRoleDislike(roleCharacterEntity);
+        loggedUserWithRolesDisliked.addRoleDislike(roleCharacterEntity);
 
         db.getRoleCharacters().save(roleCharacterEntity);
-        db.getUsers().save(loggedUser);
+        db.getUsers().save(loggedUserWithRolesDisliked);
     }
 
     @Override
     public int getRoleCharacterDislikes(Long roleCharacterId) throws RoleCharacterNotFoundException {
-        var roleCharacterEntity = db.getRoleCharacters().findById(roleCharacterId)
+        db.getRoleCharacters().findById(roleCharacterId)
                 .orElseThrow(() -> new RoleCharacterNotFoundException("Can't find role character with id: " + roleCharacterId));
-        return roleCharacterEntity.getRoleDislikes().size();
+        return db.getRoleCharacters().getRoleDislikes(roleCharacterId);
     }
 
     @Override
-    public void removeLike(Long roleId, SecurityUserDto securityUserDto) throws RoleCharacterNotFoundException {
+    public void removeLike(Long roleId, SecurityUserDto securityUserDto) throws RoleCharacterNotFoundException, UserNotFoundException {
         var loggedUser = securityUserDto.getUser();
         var roleCharacterEntity = db.getRoleCharacters().findById(roleId)
                 .orElseThrow(() -> new RoleCharacterNotFoundException("Can't find role character with id: " + roleId));
+        var loggedUserWithRolesLiked = db.getUsers().getUserWithRolesLiked(loggedUser.getId()).
+                orElseThrow(() -> new UserNotFoundException("Couldn't find user with id: " + loggedUser.getId()));
 
-        loggedUser.removeRoleLike(roleCharacterEntity);
+        loggedUserWithRolesLiked.removeRoleLike(roleCharacterEntity);
 
         db.getRoleCharacters().save(roleCharacterEntity);
         db.getUsers().save(loggedUser);
     }
 
     @Override
-    public void removeDislike(Long roleId, SecurityUserDto userDto) throws RoleCharacterNotFoundException {
+    public void removeDislike(Long roleId, SecurityUserDto userDto) throws RoleCharacterNotFoundException, UserNotFoundException {
         var loggedUser = userDto.getUser();
         var roleCharacterEntity = db.getRoleCharacters().findById(roleId)
                 .orElseThrow(() -> new RoleCharacterNotFoundException("Can't find role character with id: " + roleId));
+        var loggedUserWithRolesDisliked = db.getUsers().getUserWithRolesDisliked(loggedUser.getId()).
+                orElseThrow(() -> new UserNotFoundException("Couldn't find user with id: " + loggedUser.getId()));
 
-        loggedUser.removeRoleDislike(roleCharacterEntity);
+        loggedUserWithRolesDisliked.removeRoleDislike(roleCharacterEntity);
 
         db.getRoleCharacters().save(roleCharacterEntity);
-        db.getUsers().save(loggedUser);
+        db.getUsers().save(loggedUserWithRolesDisliked);
     }
 }

@@ -5,6 +5,7 @@ import com.kasperserzysko.web.dtos.PersonDto;
 import com.kasperserzysko.web.dtos.RoleCharacterDto;
 import com.kasperserzysko.web.dtos.SecurityUserDto;
 import com.kasperserzysko.web.exceptions.RoleCharacterNotFoundException;
+import com.kasperserzysko.web.exceptions.UserNotFoundException;
 import com.kasperserzysko.web.services.MainService;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
@@ -46,7 +47,7 @@ public class RoleCharacterController {
     public ResponseEntity likeRole(@PathVariable("id") Long id, @AuthenticationPrincipal SecurityUserDto securityUserDto){
         try {
             mainService.getRoleCharacters().likeRoleCharacter(id, securityUserDto);
-        } catch (RoleCharacterNotFoundException e) {
+        } catch (RoleCharacterNotFoundException | UserNotFoundException e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -68,7 +69,7 @@ public class RoleCharacterController {
     public ResponseEntity dislikeRole(@PathVariable("id") Long id, @AuthenticationPrincipal SecurityUserDto securityUserDto){
         try {
             mainService.getRoleCharacters().dislikeRoleCharacter(id, securityUserDto);
-        } catch (RoleCharacterNotFoundException e) {
+        } catch (RoleCharacterNotFoundException | UserNotFoundException e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -89,7 +90,7 @@ public class RoleCharacterController {
     public ResponseEntity removeLike(@PathVariable("id") Long id, @AuthenticationPrincipal SecurityUserDto securityUserDto){
         try {
             mainService.getRoleCharacters().removeLike(id, securityUserDto);
-        } catch (RoleCharacterNotFoundException e) {
+        } catch (RoleCharacterNotFoundException | UserNotFoundException e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -100,7 +101,7 @@ public class RoleCharacterController {
     public ResponseEntity removeDislike(@PathVariable("id") Long id, @AuthenticationPrincipal SecurityUserDto securityUserDto){
         try {
             mainService.getRoleCharacters().removeDislike(id, securityUserDto);
-        } catch (RoleCharacterNotFoundException e) {
+        } catch (RoleCharacterNotFoundException | UserNotFoundException e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }

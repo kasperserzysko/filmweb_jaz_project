@@ -28,6 +28,6 @@ public interface IMovieService {
     void addComment(Long movieId, CommentDto dto, SecurityUserDto userDto) throws MovieNotFoundException, UserNotFoundException;
     List<CommentDetailedDto> getComments(Long movieId, Optional<Integer> currentPage) throws MovieNotFoundException;
     List<MovieDto> getTopMovies(Optional<Integer> currentPage);
-    void removeLike(Long movieId, SecurityUserDto userDto) throws MovieNotFoundException;
-    void removeDislike(Long movieId, SecurityUserDto userDto) throws MovieNotFoundException;
+    void removeLike(Long movieId, SecurityUserDto userDto) throws MovieNotFoundException, UserNotFoundException;
+    void removeDislike(Long movieId, SecurityUserDto userDto) throws MovieNotFoundException, UserNotFoundException;
 }

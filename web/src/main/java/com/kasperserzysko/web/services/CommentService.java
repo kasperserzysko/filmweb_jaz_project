@@ -30,50 +30,71 @@ public class CommentService implements ICommentService {
     }
 
     @Override
-    public void likeComment(Long commentId, SecurityUserDto securityUserDto) throws CommentNotFoundException {
+    public void likeComment(Long commentId, SecurityUserDto securityUserDto) throws CommentNotFoundException, UserNotFoundException {
         var loggedUser = securityUserDto.getUser();
         var commentEntity = db.getComments().findById(commentId)
                 .orElseThrow(() -> new CommentNotFoundException("Can't find comment with id: " + commentId));
+        var loggedUserWithCommentsLiked = db.getUsers().getUserWithCommentsLiked(loggedUser.getId()).
+                orElseThrow(() -> new UserNotFoundException("Couldn't find user with id: " + loggedUser.getId()));
 
-        loggedUser.addCommentLike(commentEntity);
+        loggedUserWithCommentsLiked.addCommentLike(commentEntity);
 
         db.getComments().save(commentEntity);
-        db.getUsers().save(loggedUser);
+        db.getUsers().save(loggedUserWithCommentsLiked);
     }
 
     @Override
     public int getCommentLikes(Long commentId) throws CommentNotFoundException {
-        var commentEntity = db.getComments().findById(commentId)
+        db.getComments().findById(commentId)
                 .orElseThrow(() -> new CommentNotFoundException("Can't find comment with id: " + commentId));
-        return commentEntity.getUpVotes().size();
+        return db.getComments().getCommentLikes(commentId);
     }
 
     @Override
-    public void dislikeComment(Long commentId, SecurityUserDto securityUserDto) throws CommentNotFoundException {
+    public void dislikeComment(Long commentId, SecurityUserDto securityUserDto) throws CommentNotFoundException, UserNotFoundException {
         var loggedUser = securityUserDto.getUser();
         var commentEntity = db.getComments().findById(commentId)
                 .orElseThrow(() -> new CommentNotFoundException("Can't find comment with id: " + commentId));
+        var loggedUserWithCommentsDisliked =  db.getUsers().getUserWithCommentsDisliked(loggedUser.getId()).
+                orElseThrow(() -> new UserNotFoundException("Couldn't find user with id: " + loggedUser.getId()));
 
-        loggedUser.addCommentDislike(commentEntity);
+        loggedUserWithCommentsDisliked.addCommentDislike(commentEntity);
+
+        db.getComments().save(commentEntity);
+        db.getUsers().save(loggedUserWithCommentsDisliked);
+    }
+
+    @Override
+    public int getCommentDislikes(Long commentId) throws CommentNotFoundException {
+        db.getComments().findById(commentId)
+                .orElseThrow(() -> new CommentNotFoundException("Can't find comment with id: " + commentId));
+        return db.getComments().getCommentDislikes(commentId);
+    }
+
+
+    @Override
+    public void removeLike(Long commentId, SecurityUserDto securityUserDto) throws CommentNotFoundException, UserNotFoundException {
+        var loggedUser = securityUserDto.getUser();
+        var commentEntity = db.getComments().findById(commentId)
+                .orElseThrow(() -> new CommentNotFoundException("Can't find comment with id: " + commentId));
+        var loggedUserWithCommentsLiked =  db.getUsers().getUserWithCommentsLiked(loggedUser.getId()).
+                orElseThrow(() -> new UserNotFoundException("Couldn't find user with id: " + loggedUser.getId()));
+
+        loggedUserWithCommentsLiked.removeCommentLike(commentEntity);
 
         db.getComments().save(commentEntity);
         db.getUsers().save(loggedUser);
     }
 
     @Override
-    public int getCommentDislikes(Long commentId) throws CommentNotFoundException {
-        var commentEntity = db.getComments().findById(commentId)
-                .orElseThrow(() -> new CommentNotFoundException("Can't find comment with id: " + commentId));
-        return commentEntity.getDownVotes().size();
-    }
-
-    @Override
-    public void removeLikesAndDislikes(Long commentId, SecurityUserDto securityUserDto) throws CommentNotFoundException {
+    public void removeDislike(Long commentId, SecurityUserDto securityUserDto) throws CommentNotFoundException, UserNotFoundException {
         var loggedUser = securityUserDto.getUser();
         var commentEntity = db.getComments().findById(commentId)
                 .orElseThrow(() -> new CommentNotFoundException("Can't find comment with id: " + commentId));
+        var loggedUserWithCommentsDisliked =  db.getUsers().getUserWithCommentsDisliked(loggedUser.getId()).
+                orElseThrow(() -> new UserNotFoundException("Couldn't find user with id: " + loggedUser.getId()));
 
-        loggedUser.removeCommentLikeOrDislike(commentEntity);
+        loggedUserWithCommentsDisliked.removeCommentDislike(commentEntity);
 
         db.getComments().save(commentEntity);
         db.getUsers().save(loggedUser);

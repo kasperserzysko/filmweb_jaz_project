@@ -37,7 +37,7 @@ public class CommentController {
         try {
             mainService.getComments().likeComment(id, securityUserDto);
             return new ResponseEntity<>(HttpStatus.OK);
-        } catch (CommentNotFoundException e) {
+        } catch (CommentNotFoundException | UserNotFoundException e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -58,7 +58,7 @@ public class CommentController {
         try {
             mainService.getComments().dislikeComment(id, securityUserDto);
             return new ResponseEntity<>(HttpStatus.OK);
-        } catch (CommentNotFoundException e) {
+        } catch (CommentNotFoundException | UserNotFoundException e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -74,12 +74,23 @@ public class CommentController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @GetMapping("/{id}/removeLikes")
-    public ResponseEntity removeLikeOrDislike(@PathVariable("id") Long id, @AuthenticationPrincipal SecurityUserDto securityUserDto){
+    @DeleteMapping("/{id}/likes")
+    public ResponseEntity removeLike(@PathVariable("id") Long id, @AuthenticationPrincipal SecurityUserDto securityUserDto){
         try {
-            mainService.getComments().removeLikesAndDislikes(id, securityUserDto);
+            mainService.getComments().removeLike(id, securityUserDto);
             return new ResponseEntity<>(HttpStatus.OK);
-        } catch (CommentNotFoundException e) {
+        } catch (CommentNotFoundException | UserNotFoundException e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+    @PreAuthorize("isAuthenticated()")
+    @DeleteMapping("/{id}/dislikes")
+    public ResponseEntity removeDislike(@PathVariable("id") Long id, @AuthenticationPrincipal SecurityUserDto securityUserDto){
+        try {
+            mainService.getComments().removeDislike(id, securityUserDto);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (CommentNotFoundException | UserNotFoundException e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }

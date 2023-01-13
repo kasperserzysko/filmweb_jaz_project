@@ -320,28 +320,31 @@ public class MovieService implements IMovieService {
     }
 
     @Override
-    public void removeLike(Long movieId, SecurityUserDto userDto) throws MovieNotFoundException {
+    public void removeLike(Long movieId, SecurityUserDto userDto) throws MovieNotFoundException, UserNotFoundException {
         var movieEntity = db.getMovies().findById(movieId)
                 .orElseThrow(() -> new MovieNotFoundException("Can't find movie with id: " + movieId));
 
         var loggedUser = userDto.getUser();
+        var loggedUserWithMoviesLiked = db.getUsers().getUserWithMoviesLiked(loggedUser.getId()).
+                orElseThrow(() -> new UserNotFoundException("Couldn't find user with id: " + loggedUser.getId()));
+        loggedUserWithMoviesLiked.removeMovieLike(movieEntity);
 
-        loggedUser.removeMovieLike(movieEntity);
-
-        db.getUsers().save(loggedUser);
+        db.getUsers().save(loggedUserWithMoviesLiked);
         db.getMovies().save(movieEntity);
     }
 
     @Override
-    public void removeDislike(Long movieId, SecurityUserDto userDto) throws MovieNotFoundException {
+    public void removeDislike(Long movieId, SecurityUserDto userDto) throws MovieNotFoundException, UserNotFoundException {
         var movieEntity = db.getMovies().findById(movieId)
                 .orElseThrow(() -> new MovieNotFoundException("Can't find movie with id: " + movieId));
 
         var loggedUser = userDto.getUser();
+        var loggedUserWithMoviesDisliked = db.getUsers().getUserWithMoviesDisliked(loggedUser.getId()).
+                orElseThrow(() -> new UserNotFoundException("Couldn't find user with id: " + loggedUser.getId()));
 
-        loggedUser.removeMovieDislike(movieEntity);
+        loggedUserWithMoviesDisliked.removeMovieDislike(movieEntity);
 
-        db.getUsers().save(loggedUser);
+        db.getUsers().save(loggedUserWithMoviesDisliked);
         db.getMovies().save(movieEntity);
     }
 

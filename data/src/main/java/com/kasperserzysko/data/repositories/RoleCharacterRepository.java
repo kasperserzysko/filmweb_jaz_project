@@ -34,4 +34,10 @@ public interface RoleCharacterRepository extends JpaRepository<RoleCharacter, Lo
             "    inner join (SELECT rc.id, count(rc.id) as dislikes_count FROM role_character rc inner join user_roles_disliked urd on rc.id = urd.role_id group by rc.name) dislikes on rc.id = dislikes.id\n" +
             "group by rc.id order by (likes.likes_count - dislikes.dislikes_count) desc LIMIT 100")
     List<RoleCharacter> getRoleCharactersByRating();
+
+    @Query(nativeQuery = true, value = "SELECT COUNT(user_id) FROM user_roles_liked where role_id = :roleId")
+    int getRoleLikes(Long roleId);
+
+    @Query(nativeQuery = true, value = "SELECT COUNT(user_id) FROM user_roles_disliked where role_id = :roleId")
+    int getRoleDislikes(Long roleId);
 }
