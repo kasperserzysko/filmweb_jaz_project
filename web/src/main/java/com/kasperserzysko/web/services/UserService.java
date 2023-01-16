@@ -2,12 +2,10 @@ package com.kasperserzysko.web.services;
 
 import com.kasperserzysko.data.models.User;
 import com.kasperserzysko.data.repositories.DataRepository;
-import com.kasperserzysko.web.cache.list_models.MovieList;
 import com.kasperserzysko.web.dtos.*;
 import com.kasperserzysko.web.exceptions.UserNotFoundException;
 import com.kasperserzysko.web.services.interfaces.IUserService;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,7 +21,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
-@Transactional(propagation= Propagation.REQUIRED, readOnly=true, noRollbackFor=Exception.class)
 @Service
 public class UserService implements UserDetailsService, IUserService {
 
@@ -99,40 +96,52 @@ public class UserService implements UserDetailsService, IUserService {
         var userEntity = db.getUsers().findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("Couldn't find user with id: " + userId));
 
-        userEntity.getCommentsLiked().forEach(comment -> {
-            userEntity.removeCommentLike(comment);
-            db.getComments().save(comment);
-        });
-        userEntity.getCommentsDisliked().forEach(comment -> {
-            userEntity.removeCommentDislike(comment);
-            db.getComments().save(comment);
-        });
-        userEntity.getComments().forEach(comment -> {               //TODO usuń komentarze bez autora
-            userEntity.removeComment(comment);
-            db.getComments().save(comment);
-        });
-        userEntity.getMoviesLiked().forEach(movie -> {
-            userEntity.removeMovieLikeOrDislike(movie);
-            db.getMovies().save(movie);
-        });
-        userEntity.getMoviesDisliked().forEach(movie -> {
-            userEntity.removeMovieLikeOrDislike(movie);
-            db.getMovies().save(movie);
-        });
-        userEntity.getRolesLiked().forEach(roleCharacter -> {
-            userEntity.removeRoleLike(roleCharacter);
-            db.getRoleCharacters().save(roleCharacter);
-        });
-        userEntity.getRolesDisliked().forEach(roleCharacter -> {
-            userEntity.removeRoleDislike(roleCharacter);
-            db.getRoleCharacters().save(roleCharacter);
-        });
-        userEntity.getRoles().forEach(role -> {
-            userEntity.removeRole(role);
-            db.getRoles().save(role);
-        });
+        for (int index = userEntity.getCommentsLiked().size() - 1; index >= 0; index--){
+            var comment = userEntity.getCommentsLiked().get(index);
+            comment.getUpVotes().remove(userEntity);
+            userEntity.getCommentsLiked().remove(comment);
+        }
+        for (int index = userEntity.getCommentsDisliked().size() - 1; index >= 0; index--){
+            var comment = userEntity.getCommentsDisliked().get(index);
+            comment.getDownVotes().remove(userEntity);
+            userEntity.getCommentsDisliked().remove(comment);
+        }
+        for (int index = userEntity.getComments().size() - 1; index >= 0; index--){
+            var comment = userEntity.getComments().get(index);
 
-        db.getMovies().deleteById(userId);
+            userEntity.getComments().remove(comment);
+            comment.setCommentCreator(null);
+            comment.removeVotes(comment);
+
+            db.getComments().delete(comment);
+        }
+        for (int index = userEntity.getMoviesLiked().size() - 1; index >= 0; index--){
+            var movie = userEntity.getMoviesLiked().get(index);
+            movie.getLikes().remove(userEntity);
+            userEntity.getMoviesLiked().remove(movie);
+        }
+        for (int index = userEntity.getMoviesDisliked().size() - 1; index >= 0; index--){
+            var movie = userEntity.getMoviesDisliked().get(index);
+            movie.getDislikes().remove(userEntity);
+            userEntity.getMoviesDisliked().remove(movie);
+        }
+        for (int index = userEntity.getRolesLiked().size() - 1; index >= 0; index--){
+            var roleCharacter = userEntity.getRolesLiked().get(index);
+            roleCharacter.getRoleLikes().remove(userEntity);
+            userEntity.getRolesLiked().remove(roleCharacter);
+        }
+        for (int index = userEntity.getRolesDisliked().size() - 1; index >= 0; index--){
+            var roleCharacter = userEntity.getRolesDisliked().get(index);
+            roleCharacter.getRoleDislikes().remove(userEntity);
+            userEntity.getRolesDisliked().remove(roleCharacter);
+        }
+        for (int index = userEntity.getRoles().size() - 1; index >= 0; index--){
+            var role = userEntity.getRoles().get(index);
+            role.getUsers().remove(userEntity);
+            userEntity.getRoles().remove(role);
+        }
+
+        db.getUsers().deleteById(userId);
     }
 
     @Override
@@ -152,13 +161,12 @@ public class UserService implements UserDetailsService, IUserService {
     }
 
     @Override
-    public List<RoleCharacterDto> getLikedRoleCharacters(Long userId, Integer currentPage) throws UserNotFoundException {
+    public List<RoleCharacterDto> getLikedRoleCharacters(Long userId, Optional<Integer> currentPageOptional) throws UserNotFoundException {
         db.getUsers().findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("Couldn't find user with id: " + userId));
 
-        if (currentPage == null){
-            currentPage = 1;
-        }
+        int currentPage = currentPageOptional.orElse(1);
+
         Pageable pageable = PageRequest.of(currentPage - 1, ITEMS_PER_PAGE);
         return db.getRoleCharacters().getLikedRoleCharacters(userId, pageable).stream().map(roleCharacter -> {
             var roleCharacterDto = new RoleCharacterDto();

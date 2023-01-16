@@ -19,8 +19,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u WHERE u.email LIKE %:keyword% ORDER BY u.email")
     List<User> getUsers(String keyword, Pageable pageable);
 
-    @Query(nativeQuery = true, value = "SELECT u.* FROM user u INNER JOIN comment c ON c.comment_creator_id = u.id WHERE c.comment_creator_id = :userId")
-    Optional<User> getCommentCreator(Long userId);
+    @Query(nativeQuery = true, value = "SELECT u.* FROM user u INNER JOIN comment c ON c.comment_creator_id = u.id WHERE c.id = :commentId")
+    Optional<User> getCommentCreator(Long commentId);
 
     @Query("SELECT u FROM User u LEFT JOIN FETCH u.moviesLiked WHERE u.id = :userId")
     Optional<User> getUserWithMoviesLiked(Long userId);

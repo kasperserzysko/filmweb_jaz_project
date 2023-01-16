@@ -6,7 +6,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -27,10 +29,10 @@ public class Person {
     private LocalDate deathday;
 
     @ManyToMany(mappedBy = "producers")
-    private Set<Movie> moviesCreated = new HashSet<>();
+    private List<Movie> moviesCreated = new ArrayList<>();
 
-    @OneToMany()
-    private Set<RoleCharacter> moviesStarred = new HashSet<>();
+    @OneToMany(mappedBy = "actor")
+    private List<RoleCharacter> moviesStarred = new ArrayList<>();
 
 
 

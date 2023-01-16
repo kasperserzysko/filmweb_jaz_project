@@ -78,7 +78,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}/likes_roles")
-    public ResponseEntity<List<RoleCharacterDto>> getLikedRoles(@PathVariable("id") Long id, @RequestParam("page") Integer currentPage){
+    public ResponseEntity<List<RoleCharacterDto>> getLikedRoles(@PathVariable("id") Long id, @RequestParam("page") Optional<Integer> currentPage){
         try {
             return ResponseEntity.ok(mainService.getUsers().getLikedRoleCharacters(id, currentPage));
         } catch (UserNotFoundException e) {

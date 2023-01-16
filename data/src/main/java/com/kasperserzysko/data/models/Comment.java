@@ -6,7 +6,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -32,14 +34,23 @@ public class Comment {
     private Movie movie;
 
     @ManyToMany(mappedBy = "commentsLiked")
-    private Set<User> upVotes = new HashSet<>();
+    private List<User> upVotes = new ArrayList<>();
 
     @ManyToMany(mappedBy = "commentsDisliked")
-    private Set<User> downVotes = new HashSet<>();
+    private List<User> downVotes = new ArrayList<>();
 
 
-    public void removeCommentCreator(){
-        commentCreator.getComments().remove(this);
-        commentCreator = null;
+    public void removeVotes(Comment comment){
+        for (int indexRole = comment.getUpVotes().size() - 1; indexRole >= 0; indexRole--) {
+            var user = comment.getUpVotes().get(indexRole);
+            user.getCommentsLiked().remove(comment);
+            comment.getUpVotes().remove(user);
+        }
+        for (int indexRole = comment.getDownVotes().size() - 1; indexRole >= 0; indexRole--) {
+            var user = comment.getDownVotes().get(indexRole);
+            user.getCommentsDisliked().remove(comment);
+            comment.getDownVotes().remove(user);
+        }
     }
+
 }

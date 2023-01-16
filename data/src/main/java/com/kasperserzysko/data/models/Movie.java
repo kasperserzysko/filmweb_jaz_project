@@ -4,9 +4,12 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -30,26 +33,26 @@ public class Movie {
             name = "movie_genres",
             joinColumns = @JoinColumn(name = "movie_id"),
             inverseJoinColumns = @JoinColumn(name = "genre_id"))
-    private Set<Genre> genres = new HashSet<>();
+    private List<Genre> genres = new ArrayList<>();
 
     @ManyToMany
     @JoinTable(
             name = "movie_producers",
             joinColumns = @JoinColumn(name = "movie_id"),
             inverseJoinColumns = @JoinColumn(name = "person_id"))
-    private Set<Person> producers = new HashSet<>();
+    private List<Person> producers = new ArrayList<>();
 
-    @OneToMany
-    private Set<RoleCharacter> characters = new HashSet<>();
+    @OneToMany(mappedBy = "movie")
+    private List<RoleCharacter> characters = new ArrayList<>();
 
-    @OneToMany
-    private Set<Comment> comments = new HashSet<>();
+    @OneToMany(mappedBy = "movie")
+    private List<Comment> comments = new ArrayList<>();
 
-    @ManyToMany
-    private Set<User> likes = new HashSet<>();
+    @ManyToMany(mappedBy = "moviesLiked")
+    private List<User> likes = new ArrayList<>();
 
-    @ManyToMany
-    private Set<User> dislikes = new HashSet<>();
+    @ManyToMany(mappedBy = "moviesDisliked")
+    private List<User> dislikes = new ArrayList<>();
 
 
 
@@ -57,36 +60,17 @@ public class Movie {
         roleCharacter.setMovie(this);
         characters.add(roleCharacter);
     }
-    public void removeCharacter(RoleCharacter roleCharacter){
-        roleCharacter.setMovie(null);
-        roleCharacter.removeActor();
-        characters.remove(roleCharacter);
-    }
     public void addProducer(Person person){
         person.getMoviesCreated().add(this);
         producers.add(person);
     }
-    public void removeProducer(Person person){
-        person.getMoviesCreated().remove(this);
-        producers.remove(person);
-    }
-
     public void addComment(Comment comment){
         comment.setMovie(this);
         comments.add(comment);
     }
-    public void removeComment(Comment comment){
-        comment.setMovie(null);
-        comment.removeCommentCreator();
-        comments.remove(comment);
-    }
-
     public void addGenre(Genre genre){
         genre.getMovies().add(this);
         genres.add(genre);
     }
-    public void removeGenre(Genre genre){
-        genre.getMovies().remove(this);
-        genres.remove(genre);
-    }
+
 }

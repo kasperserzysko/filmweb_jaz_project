@@ -26,13 +26,13 @@ public class RoleCharacterController {
         this.mainService = mainService;
     }
 
-    @GetMapping
+    @GetMapping("/top")
     public ResponseEntity<List<RoleCharacterDto>> getTopRoleCharacters(){
         return ResponseEntity.ok(mainService.getRoleCharacters().getTopRoles());
     }
 
 
-    @GetMapping("/roles/{id}/person")
+    @GetMapping("/{id}/person")
     public ResponseEntity<PersonDto> getRolePerson(@PathVariable("id") Long id){
         try {
             return ResponseEntity.ok(mainService.getRoleCharacters().getRolePerson(id));

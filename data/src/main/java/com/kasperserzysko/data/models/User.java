@@ -5,7 +5,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -21,36 +23,36 @@ public class User {
     private String email;
     private String password;
 
-    @OneToMany
-    private Set<Comment> comments = new HashSet<>();
+    @OneToMany(mappedBy = "commentCreator")
+    private List<Comment> comments = new ArrayList<>();
 
     @ManyToMany
     @JoinTable(
             name = "user_commets_liked",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "comment_id"))
-    private Set<Comment> commentsLiked = new HashSet<>();
+    private List<Comment> commentsLiked = new ArrayList<>();
 
     @ManyToMany
     @JoinTable(
             name = "user_commets_disliked",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "comment_id"))
-    private Set<Comment> commentsDisliked = new HashSet<>();
+    private List<Comment> commentsDisliked = new ArrayList<>();
 
     @ManyToMany
     @JoinTable(
             name = "user_roles_liked",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private Set<RoleCharacter> rolesLiked = new HashSet<>();
+    private List<RoleCharacter> rolesLiked = new ArrayList<>();
 
     @ManyToMany
     @JoinTable(
             name = "user_roles_disliked",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private Set<RoleCharacter> rolesDisliked = new HashSet<>();
+    private List<RoleCharacter> rolesDisliked = new ArrayList<>();
 
 
     @ManyToMany
@@ -58,21 +60,21 @@ public class User {
             name = "user_movies_liked",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "movie_id"))
-    private Set<Movie> moviesLiked = new HashSet<>();
+    private List<Movie> moviesLiked = new ArrayList<>();
 
     @ManyToMany
     @JoinTable(
             name = "user_movies_disliked",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "movie_id"))
-    private Set<Movie> moviesDisliked = new HashSet<>();
+    private List<Movie> moviesDisliked = new ArrayList<>();
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private Set<Role> roles = new HashSet<>();
+    private List<Role> roles = new ArrayList<>();
 
 
 
@@ -94,12 +96,6 @@ public class User {
     public void removeMovieDislike(Movie movie){
         movie.getDislikes().remove(this);
         moviesDisliked.remove(movie);
-    }
-    public void removeMovieLikeOrDislike(Movie movie){
-        movie.getDislikes().remove(this);
-        movie.getLikes().remove(this);
-        moviesDisliked.remove(movie);
-        moviesLiked.remove(movie);
     }
 
     public void addComment(Comment comment){
@@ -126,12 +122,6 @@ public class User {
         comment.getDownVotes().remove(this);
         commentsDisliked.remove(comment);
     }
-    public void removeCommentLikeOrDislike(Comment comment){
-        comment.getDownVotes().remove(this);
-        comment.getUpVotes().remove(this);
-        commentsLiked.remove(comment);
-        commentsDisliked.remove(comment);
-    }
     public void addRoleLike(RoleCharacter roleCharacter){
         roleCharacter.getRoleLikes().add(this);
         rolesLiked.add(roleCharacter);
@@ -146,12 +136,6 @@ public class User {
     }
     public void removeRoleDislike(RoleCharacter roleCharacter){
         roleCharacter.getRoleDislikes().remove(this);
-        rolesDisliked.remove(roleCharacter);
-    }
-    public void removeRoleLikeOrDislike(RoleCharacter roleCharacter){
-        roleCharacter.getRoleDislikes().remove(this);
-        roleCharacter.getRoleLikes().remove(this);
-        rolesLiked.remove(roleCharacter);
         rolesDisliked.remove(roleCharacter);
     }
     public void addRole(Role role){

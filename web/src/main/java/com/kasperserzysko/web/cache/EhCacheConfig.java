@@ -1,8 +1,9 @@
 package com.kasperserzysko.web.cache;
 
-import com.kasperserzysko.web.cache.list_models.GenreList;
-import com.kasperserzysko.web.cache.list_models.PersonList;
-import com.kasperserzysko.web.cache.list_models.RoleCharacterList;
+import com.kasperserzysko.web.cache.list_wrappers.GenreListWrapper;
+import com.kasperserzysko.web.cache.list_wrappers.MovieListWrapper;
+import com.kasperserzysko.web.cache.list_wrappers.PersonListWrapper;
+import com.kasperserzysko.web.cache.list_wrappers.RoleCharacterListWrapper;
 import com.kasperserzysko.web.dtos.*;
 import org.ehcache.config.CacheConfiguration;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
@@ -24,14 +25,8 @@ import java.util.Collection;
 @Configuration
 public class EhCacheConfig {
 
-    private class MovieList extends ArrayList<MovieDto> implements Serializable {
-        public MovieList(final Collection<? extends MovieDto> c) {
-            super(c);
-        }
-    }
-
     @Bean
-    CacheManager movieDetailsCacheManager(){
+    CacheManager ehCacheManager(){
         CacheConfiguration<Long, MovieDetailsDto> movieDetailsDtoCacheConfiguration = CacheConfigurationBuilder.newCacheConfigurationBuilder(Long.class,
                 MovieDetailsDto.class,
                         ResourcePoolsBuilder.newResourcePoolsBuilder()
@@ -40,22 +35,22 @@ public class EhCacheConfig {
                 .withExpiry(ExpiryPolicyBuilder.timeToIdleExpiration(Duration.ofSeconds(10)))
                 .build();
 
-        CacheConfiguration<Long, RoleCharacterList> roleCharacterDtoCacheConfiguration = CacheConfigurationBuilder.newCacheConfigurationBuilder(Long.class,
-                        RoleCharacterList.class,
+        CacheConfiguration<Long, RoleCharacterListWrapper> roleCharacterDtoCacheConfiguration = CacheConfigurationBuilder.newCacheConfigurationBuilder(Long.class,
+                        RoleCharacterListWrapper.class,
                         ResourcePoolsBuilder.newResourcePoolsBuilder()
                                 .offheap(10, MemoryUnit.MB)
                                 .build())
                 .withExpiry(ExpiryPolicyBuilder.timeToIdleExpiration(Duration.ofSeconds(10)))
                 .build();
-        CacheConfiguration<Long, GenreList> genreDtoListCacheConfiguration = CacheConfigurationBuilder.newCacheConfigurationBuilder(Long.class,
-                        GenreList.class,
+        CacheConfiguration<Long, GenreListWrapper> genreDtoListCacheConfiguration = CacheConfigurationBuilder.newCacheConfigurationBuilder(Long.class,
+                        GenreListWrapper.class,
                         ResourcePoolsBuilder.newResourcePoolsBuilder()
                                 .offheap(10, MemoryUnit.MB)
                                 .build())
                 .withExpiry(ExpiryPolicyBuilder.timeToIdleExpiration(Duration.ofSeconds(10)))
                 .build();
-        CacheConfiguration<Long, PersonList> producerListCacheConfiguration = CacheConfigurationBuilder.newCacheConfigurationBuilder(Long.class,
-                        PersonList.class,
+        CacheConfiguration<Long, PersonListWrapper> producerListCacheConfiguration = CacheConfigurationBuilder.newCacheConfigurationBuilder(Long.class,
+                        PersonListWrapper.class,
                         ResourcePoolsBuilder.newResourcePoolsBuilder()
                                 .offheap(10, MemoryUnit.MB)
                                 .build())
@@ -68,8 +63,8 @@ public class EhCacheConfig {
                                 .build())
                 .withExpiry(ExpiryPolicyBuilder.timeToIdleExpiration(Duration.ofSeconds(10)))
                 .build();
-        CacheConfiguration<Long, MovieList> movieListCacheConfiguration = CacheConfigurationBuilder.newCacheConfigurationBuilder(Long.class,
-                        MovieList.class,
+        CacheConfiguration<Long, MovieListWrapper> movieListCacheConfiguration = CacheConfigurationBuilder.newCacheConfigurationBuilder(Long.class,
+                        MovieListWrapper.class,
                         ResourcePoolsBuilder.newResourcePoolsBuilder()
                                 .offheap(10, MemoryUnit.MB)
                                 .build())
@@ -87,11 +82,11 @@ public class EhCacheConfig {
         CacheManager cacheManager = cachingProvider.getCacheManager();
 
         javax.cache.configuration.Configuration<Long, MovieDetailsDto> movieDetailsConfiguration = Eh107Configuration.fromEhcacheCacheConfiguration(movieDetailsDtoCacheConfiguration);
-        javax.cache.configuration.Configuration<Long, RoleCharacterList> roleCharacterListConfiguration = Eh107Configuration.fromEhcacheCacheConfiguration(roleCharacterDtoCacheConfiguration);
-        javax.cache.configuration.Configuration<Long, GenreList> genreListConfiguration = Eh107Configuration.fromEhcacheCacheConfiguration(genreDtoListCacheConfiguration);
-        javax.cache.configuration.Configuration<Long, PersonList> personListConfiguration = Eh107Configuration.fromEhcacheCacheConfiguration(producerListCacheConfiguration);
+        javax.cache.configuration.Configuration<Long, RoleCharacterListWrapper> roleCharacterListConfiguration = Eh107Configuration.fromEhcacheCacheConfiguration(roleCharacterDtoCacheConfiguration);
+        javax.cache.configuration.Configuration<Long, GenreListWrapper> genreListConfiguration = Eh107Configuration.fromEhcacheCacheConfiguration(genreDtoListCacheConfiguration);
+        javax.cache.configuration.Configuration<Long, PersonListWrapper> personListConfiguration = Eh107Configuration.fromEhcacheCacheConfiguration(producerListCacheConfiguration);
         javax.cache.configuration.Configuration<Long, PersonDetailedDto> personDetailConfiguration = Eh107Configuration.fromEhcacheCacheConfiguration(personDetailCacheConfiguration);
-        javax.cache.configuration.Configuration<Long, MovieList> movieListConfiguration = Eh107Configuration.fromEhcacheCacheConfiguration(movieListCacheConfiguration);
+        javax.cache.configuration.Configuration<Long, MovieListWrapper> movieListConfiguration = Eh107Configuration.fromEhcacheCacheConfiguration(movieListCacheConfiguration);
         javax.cache.configuration.Configuration<Long, UserUsernameDto> userUsernameConfiguration = Eh107Configuration.fromEhcacheCacheConfiguration(userUsernameCacheConfiguration);
 
 
@@ -100,7 +95,7 @@ public class EhCacheConfig {
         cacheManager.createCache("cacheMovieGenreList", genreListConfiguration);
         cacheManager.createCache("cacheMovieProducerList", personListConfiguration);
         cacheManager.createCache("cachePersonDetails", personDetailConfiguration);
-        cacheManager.createCache("cachePersonRoleList", personListConfiguration);
+        cacheManager.createCache("cachePersonRoleList", roleCharacterListConfiguration);
         cacheManager.createCache("cachePersonProductionsList", movieListConfiguration);
         cacheManager.createCache("cacheUserUsername", userUsernameConfiguration);
 

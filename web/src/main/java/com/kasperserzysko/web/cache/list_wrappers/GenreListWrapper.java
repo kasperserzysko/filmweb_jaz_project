@@ -1,4 +1,4 @@
-package com.kasperserzysko.web.cache.list_models;
+package com.kasperserzysko.web.cache.list_wrappers;
 
 import com.kasperserzysko.web.dtos.GenreDto;
 
@@ -7,12 +7,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class GenreList extends ArrayList<GenreDto> implements Serializable {
+public class GenreListWrapper extends ArrayList<GenreDto> implements Serializable {
 
     private final List<GenreDto> genreDtos;
 
 
-    public GenreList(List<GenreDto> genreDtos) {
+    public GenreListWrapper(List<GenreDto> genreDtos) {
         this.genreDtos = genreDtos;
     }
 

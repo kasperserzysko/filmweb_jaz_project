@@ -2,14 +2,15 @@ package com.kasperserzysko.web.services;
 
 import com.kasperserzysko.data.models.Person;
 import com.kasperserzysko.data.repositories.DataRepository;
-import com.kasperserzysko.web.cache.list_models.MovieList;
-import com.kasperserzysko.web.cache.list_models.RoleCharacterList;
+import com.kasperserzysko.web.cache.list_wrappers.MovieListWrapper;
+import com.kasperserzysko.web.cache.list_wrappers.RoleCharacterListWrapper;
 import com.kasperserzysko.web.dtos.MovieDto;
 import com.kasperserzysko.web.dtos.PersonDetailedDto;
 import com.kasperserzysko.web.dtos.PersonDto;
 import com.kasperserzysko.web.dtos.RoleCharacterDto;
 import com.kasperserzysko.web.exceptions.PersonNotFoundException;
 import com.kasperserzysko.web.services.interfaces.IPersonService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -22,6 +23,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 @Service
+@Slf4j
 public class PersonService implements IPersonService {
 
     private final DataRepository db;
@@ -81,21 +83,28 @@ public class PersonService implements IPersonService {
 
     @Override
     @CacheEvict(cacheNames = "cachePersonDetails", key = "#personId")
-    public void deletePerson(Long personId) throws PersonNotFoundException {
+    public void deletePerson(Long personId) throws PersonNotFoundException {        //TODO
         var personEntity = db.getPeople().findById(personId)
                 .orElseThrow(() -> new PersonNotFoundException("Can't find person with id: " + personId));
 
-        personEntity.getMoviesCreated().forEach(movie -> {
-            movie.removeProducer(personEntity);
-            db.getMovies().save(movie);
-        });
 
-        personEntity.getMoviesStarred().forEach(roleCharacter -> {
-            var movieEntity = roleCharacter.getMovie();
-            roleCharacter.removeActor();
-            db.getMovies().save(movieEntity);
-            db.getRoleCharacters().save(roleCharacter);
-        });
+        for (int index = personEntity.getMoviesCreated().size() - 1; index >= 0; index--) {
+            var movie = personEntity.getMoviesCreated().get(index);
+            movie.getProducers().remove(personEntity);
+            personEntity.getMoviesCreated().remove(movie);
+        }
+        for (int index = personEntity.getMoviesStarred().size() - 1; index >= 0; index--) {
+            var roleCharacter = personEntity.getMoviesStarred().get(index);
+
+            roleCharacter.setActor(null);
+            personEntity.getMoviesStarred().remove(roleCharacter);
+            roleCharacter.getMovie().getCharacters().remove(roleCharacter);
+            roleCharacter.setMovie(null);
+
+            roleCharacter.removeVotes(roleCharacter);
+
+            db.getRoleCharacters().delete(roleCharacter);
+        }
 
         db.getPeople().deleteById(personId);
     }
@@ -105,7 +114,7 @@ public class PersonService implements IPersonService {
     public PersonDetailedDto getPerson(Long personId) throws PersonNotFoundException {
         var personEntity = db.getPeople().findById(personId)
                 .orElseThrow(() -> new PersonNotFoundException("Can't find person with id: " + personId));
-
+        log.info("PERSON FROM DB");
         var personDto = new PersonDetailedDto();
         personDto.setFirstName(personEntity.getFirstName());
         personDto.setLastName(personEntity.getLastName());
@@ -117,10 +126,10 @@ public class PersonService implements IPersonService {
 
     @Override
     @Cacheable(cacheNames = "cachePersonRoleList", key = "#personId")
-    public RoleCharacterList getRoles(Long personId) throws PersonNotFoundException {
+    public RoleCharacterListWrapper getRoles(Long personId) throws PersonNotFoundException {
         db.getPeople().findById(personId)
                 .orElseThrow(() -> new PersonNotFoundException("Can't find person with id: " + personId));
-
+        log.info("ROLES FROM DB");
         List<RoleCharacterDto> roleCharacterDtos = db.getRoleCharacters().getPersonRoleCharactersByRating(personId).stream().map(roleCharacter -> {
             var roleCharacterDto = new RoleCharacterDto();
             roleCharacterDto.setId(roleCharacter.getId());
@@ -128,21 +137,21 @@ public class PersonService implements IPersonService {
             return roleCharacterDto;
         }).toList();
 
-        return new RoleCharacterList(roleCharacterDtos);
+        return new RoleCharacterListWrapper(roleCharacterDtos);
     }
 
     @Override
     @Cacheable(cacheNames = "cachePersonProductionsList", key = "#personId")
-    public MovieList getMovies(Long personId) throws PersonNotFoundException {
+    public MovieListWrapper getMovies(Long personId) throws PersonNotFoundException {
         db.getPeople().findById(personId)
                 .orElseThrow(() -> new PersonNotFoundException("Can't find person with id: " + personId));
-
+        log.info("PRODUCERS FROM DB");
         List<MovieDto> movieDtos = db.getMovies().getPersonMoviesByRating(personId).stream().map(movie -> {
             var movieDto = new MovieDto();
             movieDto.setId(movie.getId());
             movieDto.setTitle(movie.getTitle());
             return movieDto;
         }).toList();
-        return new MovieList(movieDtos);
+        return new MovieListWrapper(movieDtos);
     }
 }

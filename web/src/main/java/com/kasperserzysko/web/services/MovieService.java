@@ -4,9 +4,9 @@ import com.kasperserzysko.data.models.Comment;
 import com.kasperserzysko.data.models.Movie;
 import com.kasperserzysko.data.models.RoleCharacter;
 import com.kasperserzysko.data.repositories.DataRepository;
-import com.kasperserzysko.web.cache.list_models.GenreList;
-import com.kasperserzysko.web.cache.list_models.PersonList;
-import com.kasperserzysko.web.cache.list_models.RoleCharacterList;
+import com.kasperserzysko.web.cache.list_wrappers.GenreListWrapper;
+import com.kasperserzysko.web.cache.list_wrappers.PersonListWrapper;
+import com.kasperserzysko.web.cache.list_wrappers.RoleCharacterListWrapper;
 import com.kasperserzysko.web.dtos.*;
 import com.kasperserzysko.web.exceptions.GenreNotFoundException;
 import com.kasperserzysko.web.exceptions.MovieNotFoundException;
@@ -14,15 +14,12 @@ import com.kasperserzysko.web.exceptions.PersonNotFoundException;
 import com.kasperserzysko.web.exceptions.UserNotFoundException;
 import com.kasperserzysko.web.services.interfaces.IMovieService;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.Hibernate;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -63,7 +60,7 @@ public class MovieService implements IMovieService {
 
         Pageable pageable = PageRequest.of(currentPage - 1, ITEMS_PER_PAGE);
 
-        if(keywordOptional.isEmpty()){
+        if (keywordOptional.isEmpty()) {
             return db.getMovies().getMovies(pageable).stream().map(movieMapper).toList();
         }
         return db.getMovies().getMoviesWithKeyword(keywordOptional.get(), pageable).stream().map(movieMapper).toList();
@@ -99,31 +96,59 @@ public class MovieService implements IMovieService {
     }
 
     @Override
-    @CacheEvict(cacheNames = "cacheMovieDetails", key = "#movieId")                 //TODO OGARNIJ TO GOWNO
-    public void deleteMovie(Long movieId) throws MovieNotFoundException {                           //Usuwam ręcznie film jak i wszystkie encje powiązane z nim, ponieważ usuwanie kaskadowe
-        var movieEntity = db.getMovies().findById(movieId)                                   // nie zadziałało, kiedy niektóre z encji podrzędnych miały zostać zachowane.
+    @CacheEvict(cacheNames = "cacheMovieDetails", key = "#movieId")
+    public void deleteMovie(Long movieId) throws MovieNotFoundException {
+        var movieEntity = db.getMovies().findById(movieId)
                 .orElseThrow(() -> new MovieNotFoundException("Can't find movie with id: " + movieId));
 
-        movieEntity.getCharacters().forEach(roleCharacter -> {
-            var personEntity = roleCharacter.getActor();
-            movieEntity.removeCharacter(roleCharacter);
-            db.getPeople().save(personEntity);
+        for (int index = movieEntity.getCharacters().size() - 1; index >= 0; index--) {
+            var roleCharacter = movieEntity.getCharacters().get(index);
+
+            roleCharacter.getActor().getMoviesStarred().remove(roleCharacter);
+            roleCharacter.setActor(null);
+            roleCharacter.setMovie(null);
+            movieEntity.getCharacters().remove(roleCharacter);
+
+            roleCharacter.removeVotes(roleCharacter);
             db.getRoleCharacters().delete(roleCharacter);
-        });
-        movieEntity.getProducers().forEach(person -> {
-            movieEntity.removeProducer(person);
-            db.getPeople().save(person);
-        });
-        movieEntity.getGenres().forEach(genre -> {
-            movieEntity.removeGenre(genre);
-            db.getGenres().save(genre);
-        });
-        movieEntity.getComments().forEach(comment -> {
-            var userEntity = comment.getCommentCreator();
-            movieEntity.removeComment(comment);
-            db.getUsers().save(userEntity);
+        }
+
+        for (int index = movieEntity.getProducers().size() - 1; index >= 0; index--) {
+            var person = movieEntity.getProducers().get(index);
+            person.getMoviesCreated().remove(movieEntity);
+            movieEntity.getProducers().remove(person);
+        }
+        for (int index = movieEntity.getGenres().size() - 1; index >= 0; index--) {
+            var genre = movieEntity.getGenres().get(index);
+            genre.getMovies().remove(movieEntity);
+            movieEntity.getGenres().remove(genre);
+        }
+
+
+        for (int index = movieEntity.getComments().size() - 1; index >= 0; index--) {
+            var comment = movieEntity.getComments().get(index);
+
+            comment.getCommentCreator().getComments().remove(comment);
+            comment.setCommentCreator(null);
+
+            movieEntity.getComments().remove(comment);
+            comment.setMovie(null);
+
+            comment.removeVotes(comment);
+
             db.getComments().delete(comment);
-        });
+        }
+
+        for (int index = movieEntity.getLikes().size() - 1; index >= 0; index--) {
+            var user = movieEntity.getLikes().get(index);
+            user.getMoviesLiked().remove(movieEntity);
+            movieEntity.getLikes().remove(user);
+        }
+        for (int index = movieEntity.getDislikes().size() - 1; index >= 0; index--) {
+            var user = movieEntity.getDislikes().get(index);
+            user.getMoviesDisliked().remove(movieEntity);
+            movieEntity.getDislikes().remove(user);
+        }
 
         db.getMovies().deleteById(movieId);
     }
@@ -143,11 +168,11 @@ public class MovieService implements IMovieService {
 
     @Override
     @Cacheable(cacheNames = "cacheMovieProducerList", key = "#movieId")
-    public PersonList getMovieProduces(Long movieId) throws MovieNotFoundException {
+    public PersonListWrapper getMovieProduces(Long movieId) throws MovieNotFoundException {
         db.getMovies().findById(movieId)
                 .orElseThrow(() -> new MovieNotFoundException("Can't find movie with id: " + movieId));
-
-        List<PersonDto> personDtos =  db.getPeople().getMovieProducers(movieId).stream().map(person -> {
+        log.info("PEOPLE FROM DB");
+        List<PersonDto> personDtos = db.getPeople().getMovieProducers(movieId).stream().map(person -> {
             var personDto = new PersonDto();
             personDto.setId(person.getId());
             personDto.setFirstName(person.getFirstName());
@@ -155,7 +180,7 @@ public class MovieService implements IMovieService {
             return personDto;
         }).toList();
 
-        return new PersonList(personDtos);
+        return new PersonListWrapper(personDtos);
     }
 
     @Override
@@ -179,8 +204,8 @@ public class MovieService implements IMovieService {
 
     @Override
     @Cacheable(cacheNames = "cacheMovieRolesList", key = "#movieId")
-    public RoleCharacterList getMovieRoles(Long movieId) throws MovieNotFoundException {
-        log.info("Roles from DB");
+    public RoleCharacterListWrapper getMovieRoles(Long movieId) throws MovieNotFoundException {
+        log.info("ROLES FROM DB");
         db.getMovies().findById(movieId)
                 .orElseThrow(() -> new MovieNotFoundException("Can't find movie with id: " + movieId));
 
@@ -191,7 +216,7 @@ public class MovieService implements IMovieService {
             return roleCharacterDto;
         }).toList();
 
-        return new RoleCharacterList(roleCharacterDtos);
+        return new RoleCharacterListWrapper(roleCharacterDtos);
     }
 
     @Override
@@ -208,8 +233,8 @@ public class MovieService implements IMovieService {
 
     @Override
     @Cacheable(cacheNames = "cacheMovieGenreList", key = "#movieId")
-    public GenreList getMovieGenres(Long movieId) throws MovieNotFoundException {
-        log.info("Genre from DB");
+    public GenreListWrapper getMovieGenres(Long movieId) throws MovieNotFoundException {
+        log.info("GENRES FROM DB");
         db.getMovies().findById(movieId)
                 .orElseThrow(() -> new MovieNotFoundException("Can't find movie with id: " + movieId));
         List<GenreDto> genreDtos = db.getGenres().getGenreByMovieId(movieId).stream().map(genre -> {
@@ -219,7 +244,7 @@ public class MovieService implements IMovieService {
             return genreDto;
         }).toList();
 
-        return new GenreList(genreDtos);
+        return new GenreListWrapper(genreDtos);
     }
 
     @Override
