@@ -255,10 +255,12 @@ public class MovieService implements IMovieService {
         var loggedUserWithMoviesLiked = db.getUsers().getUserWithMoviesLiked(loggedUser.getId()).
                 orElseThrow(() -> new UserNotFoundException("Couldn't find user with id: " + loggedUser.getId()));
 
-        loggedUserWithMoviesLiked.likeMovie(movieEntity);
+        if(!movieEntity.getLikes().contains(loggedUserWithMoviesLiked)) {
+            loggedUserWithMoviesLiked.likeMovie(movieEntity);
 
-        db.getMovies().save(movieEntity);
-        db.getUsers().save(loggedUserWithMoviesLiked);
+            db.getMovies().save(movieEntity);
+            db.getUsers().save(loggedUserWithMoviesLiked);
+        }
     }
 
     @Override
@@ -276,10 +278,12 @@ public class MovieService implements IMovieService {
         var loggedUserWithMoviesDisliked = db.getUsers().getUserWithMoviesDisliked(loggedUser.getId()).
                 orElseThrow(() -> new UserNotFoundException("Couldn't find user with id: " + loggedUser.getId()));
 
-        loggedUserWithMoviesDisliked.dislikeMovie(movieEntity);
+        if (!movieEntity.getDislikes().contains(loggedUserWithMoviesDisliked)) {
+            loggedUserWithMoviesDisliked.dislikeMovie(movieEntity);
 
-        db.getMovies().save(movieEntity);
-        db.getUsers().save(loggedUserWithMoviesDisliked);
+            db.getMovies().save(movieEntity);
+            db.getUsers().save(loggedUserWithMoviesDisliked);
+        }
     }
 
     @Override

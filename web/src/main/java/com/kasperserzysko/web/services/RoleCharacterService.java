@@ -51,10 +51,12 @@ public class RoleCharacterService implements IRoleCharacterService {
         var loggedUserWithRolesLiked = db.getUsers().getUserWithRolesLiked(loggedUser.getId()).
                 orElseThrow(() -> new UserNotFoundException("Couldn't find user with id: " + loggedUser.getId()));
 
-        loggedUserWithRolesLiked.addRoleLike(roleCharacterEntity);
+        if (!roleCharacterEntity.getRoleLikes().contains(loggedUserWithRolesLiked)) {
+            loggedUserWithRolesLiked.addRoleLike(roleCharacterEntity);
 
-        db.getRoleCharacters().save(roleCharacterEntity);
-        db.getUsers().save(loggedUserWithRolesLiked);
+            db.getRoleCharacters().save(roleCharacterEntity);
+            db.getUsers().save(loggedUserWithRolesLiked);
+        }
     }
 
     @Override
@@ -72,10 +74,12 @@ public class RoleCharacterService implements IRoleCharacterService {
         var loggedUserWithRolesDisliked = db.getUsers().getUserWithRolesDisliked(loggedUser.getId()).
                 orElseThrow(() -> new UserNotFoundException("Couldn't find user with id: " + loggedUser.getId()));
 
-        loggedUserWithRolesDisliked.addRoleDislike(roleCharacterEntity);
+        if (!roleCharacterEntity.getRoleDislikes().contains(loggedUserWithRolesDisliked)) {
+            loggedUserWithRolesDisliked.addRoleDislike(roleCharacterEntity);
 
-        db.getRoleCharacters().save(roleCharacterEntity);
-        db.getUsers().save(loggedUserWithRolesDisliked);
+            db.getRoleCharacters().save(roleCharacterEntity);
+            db.getUsers().save(loggedUserWithRolesDisliked);
+        }
     }
 
     @Override

@@ -36,11 +36,12 @@ public class CommentService implements ICommentService {
                 .orElseThrow(() -> new CommentNotFoundException("Can't find comment with id: " + commentId));
         var loggedUserWithCommentsLiked = db.getUsers().getUserWithCommentsLiked(loggedUser.getId()).
                 orElseThrow(() -> new UserNotFoundException("Couldn't find user with id: " + loggedUser.getId()));
+        if (!commentEntity.getUpVotes().contains(loggedUserWithCommentsLiked)) {
+            loggedUserWithCommentsLiked.addCommentLike(commentEntity);
 
-        loggedUserWithCommentsLiked.addCommentLike(commentEntity);
-
-        db.getComments().save(commentEntity);
-        db.getUsers().save(loggedUserWithCommentsLiked);
+            db.getComments().save(commentEntity);
+            db.getUsers().save(loggedUserWithCommentsLiked);
+        }
     }
 
     @Override
@@ -57,11 +58,12 @@ public class CommentService implements ICommentService {
                 .orElseThrow(() -> new CommentNotFoundException("Can't find comment with id: " + commentId));
         var loggedUserWithCommentsDisliked =  db.getUsers().getUserWithCommentsDisliked(loggedUser.getId()).
                 orElseThrow(() -> new UserNotFoundException("Couldn't find user with id: " + loggedUser.getId()));
+        if (!commentEntity.getDownVotes().contains(loggedUserWithCommentsDisliked)) {
+            loggedUserWithCommentsDisliked.addCommentDislike(commentEntity);
 
-        loggedUserWithCommentsDisliked.addCommentDislike(commentEntity);
-
-        db.getComments().save(commentEntity);
-        db.getUsers().save(loggedUserWithCommentsDisliked);
+            db.getComments().save(commentEntity);
+            db.getUsers().save(loggedUserWithCommentsDisliked);
+        }
     }
 
     @Override
