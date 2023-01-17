@@ -325,7 +325,7 @@ public class MovieService implements IMovieService {
         int currentPage = currentPageOptional.orElse(1);
         Pageable pageable = PageRequest.of(currentPage - 1, ITEMS_PER_PAGE);
 
-        return db.getComments().findAll(pageable).stream().map(comment -> {
+        return db.getComments().getMovieComments(pageable, movieId).stream().map(comment -> {
             var commentDto = new CommentDetailedDto();
             commentDto.setId(comment.getId());
             commentDto.setTitle(comment.getTitle());

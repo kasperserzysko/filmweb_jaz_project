@@ -24,4 +24,6 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Query(nativeQuery = true, value = "SELECT COUNT(user_id) FROM user_commets_disliked where comment_id = :commentId")
     int getCommentDislikes(Long commentId);
 
+    @Query("SELECT c From Comment c WHERE c.movie.id = :movieId")
+    List<Comment> getMovieComments(Pageable pageable, Long movieId);
 }
